@@ -2,11 +2,6 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <Preference
-        android:key="webDavSetting"
-        android:summary="WebDav备份与恢复"
-        android:title="WebDav设置" />
-
     <com.kunfei.bookshelf.widget.prefs.ATEPreferenceCategory android:title="书架设置">
 
         <ListPreference
@@ -76,14 +71,6 @@
             android:title="@string/search_result_filter_grade"
             app:MaxValue="9"
             app:MinValue="0" />
-
-        <com.kunfei.bookshelf.widget.number.NumberPickerPreference
-            android:defaultValue="1122"
-            android:key="webPort"
-            android:summary="@string/web_port_summary"
-            android:title="@string/web_port_title"
-            app:MaxValue="60000"
-            app:MinValue="1024" />
 
         <com.kunfei.bookshelf.widget.prefs.ATESwitchPreference
             android:defaultValue="false"

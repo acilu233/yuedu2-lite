@@ -7,6 +7,9 @@
 /captures
 /app/release/
 google-services.json
+/keystore.properties
+*.jks
+*.keystore
 
 src/androidTest/
 /back

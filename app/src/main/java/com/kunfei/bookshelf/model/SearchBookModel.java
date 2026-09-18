@@ -49,8 +49,14 @@ public class SearchBookModel {
 
     public SearchBookModel(OnSearchListener searchListener, List<BookSourceBean> sourceBeanList) {
         this.searchListener = searchListener;
-        threadsNum = MApplication.getConfigPreferences().getInt(MApplication.getInstance().getString(R.string.pk_threads_num), 6);
-        executorService = Executors.newFixedThreadPool(threadsNum);
+        // 墨水屏/低配机：默认并发 3（原来是 6），减少和 UI 抢 CPU
+        threadsNum = MApplication.getConfigPreferences().getInt(MApplication.getInstance().getString(R.string.pk_threads_num), 3);
+        // 低配设备：搜索线程降优先级，避免和 UI 抢 CPU（表现为主线程卡顿/ANR）
+        executorService = Executors.newFixedThreadPool(threadsNum, r -> {
+            Thread t = new Thread(r, "search-book");
+            t.setPriority(Thread.MIN_PRIORITY + 1);
+            return t;
+        });
         scheduler = Schedulers.from(executorService);
         compositeDisposable = new CompositeDisposable();
         search_result_filter_grade = MApplication.getConfigPreferences().getInt(MApplication.getInstance().getString(R.string.pk_search_result_filter_grade), 0);

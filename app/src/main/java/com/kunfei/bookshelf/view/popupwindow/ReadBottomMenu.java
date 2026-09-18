@@ -9,7 +9,6 @@ import android.widget.SeekBar;
 
 import com.kunfei.bookshelf.R;
 import com.kunfei.bookshelf.databinding.PopReadMenuBinding;
-import com.kunfei.bookshelf.service.ReadAloudService;
 
 public class ReadBottomMenu extends FrameLayout {
 
@@ -48,7 +47,6 @@ public class ReadBottomMenu extends FrameLayout {
     }
 
     private void bindEvent() {
-        binding.llReadAloudTimer.setOnClickListener(view -> callback.dismiss());
         binding.llFloatingButton.setOnClickListener(view -> callback.dismiss());
 
         //阅读进度
@@ -67,22 +65,6 @@ public class ReadBottomMenu extends FrameLayout {
             public void onStopTrackingTouch(SeekBar seekBar) {
                 callback.skipToPage(seekBar.getProgress());
             }
-        });
-
-        //朗读定时
-        binding.fabReadAloudTimer.setOnClickListener(view -> ReadAloudService.setTimer(getContext(), 10));
-
-        //朗读
-        binding.fabReadAloud.setOnClickListener(view -> callback.onMediaButton());
-        //长按停止朗读
-        binding.fabReadAloud.setOnLongClickListener(view -> {
-            if (ReadAloudService.running) {
-                callback.toast(R.string.aloud_stop);
-                ReadAloudService.stop(getContext());
-            } else {
-                callback.toast(R.string.read_aloud);
-            }
-            return true;
         });
 
         //自动翻页
@@ -124,27 +106,6 @@ public class ReadBottomMenu extends FrameLayout {
         //设置
         binding.llSetting.setOnClickListener(view -> callback.openMoreSetting());
 
-        binding.tvReadAloudTimer.setOnClickListener(null);
-    }
-
-    public void setFabReadAloudImage(int id) {
-        binding.fabReadAloud.setImageResource(id);
-    }
-
-    public void setReadAloudTimer(boolean visibility) {
-        if (visibility) {
-            binding.llReadAloudTimer.setVisibility(VISIBLE);
-        } else {
-            binding.llReadAloudTimer.setVisibility(GONE);
-        }
-    }
-
-    public void setReadAloudTimer(String text) {
-        binding.tvReadAloudTimer.setText(text);
-    }
-
-    public void setFabReadAloudText(String text) {
-        binding.fabReadAloud.setContentDescription(text);
     }
 
     public SeekBar getReadProgress() {
@@ -179,8 +140,6 @@ public class ReadBottomMenu extends FrameLayout {
 
     public interface Callback {
         void skipToPage(int page);
-
-        void onMediaButton();
 
         void autoPage();
 

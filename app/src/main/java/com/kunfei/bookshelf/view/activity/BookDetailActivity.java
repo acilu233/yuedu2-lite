@@ -29,8 +29,6 @@ import androidx.core.content.FileProvider;
 import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
-import com.google.zxing.EncodeHintType;
-import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.hwangjr.rxbus.RxBus;
 import com.kunfei.basemvplib.AppActivityManager;
 import com.kunfei.basemvplib.BitIntentDataManager;
@@ -60,7 +58,6 @@ import com.kunfei.bookshelf.widget.modialog.MoDialogHUD;
 import java.io.File;
 import java.io.FileOutputStream;
 
-import cn.bingoogolapple.qrcode.zxing.QRCodeEncoder;
 import io.reactivex.Single;
 import io.reactivex.SingleOnSubscribe;
 
@@ -375,11 +372,11 @@ public class BookDetailActivity extends MBaseActivity<BookDetailContract.Present
                 finishAfterTransition();
             } else {
                 finish();
-                overridePendingTransition(0, android.R.anim.fade_out);
+                overridePendingTransition(0, 0);
             }
         } else {
             finish();
-            overridePendingTransition(0, android.R.anim.fade_out);
+            overridePendingTransition(0, 0);
         }
     }
 
@@ -403,7 +400,7 @@ public class BookDetailActivity extends MBaseActivity<BookDetailContract.Present
     @Override
     public void finish() {
         super.finish();
-        overridePendingTransition(0, android.R.anim.fade_out);
+        overridePendingTransition(0, 0);
     }
 
     @Override
@@ -413,56 +410,17 @@ public class BookDetailActivity extends MBaseActivity<BookDetailContract.Present
     }
 
     private void share() {
-
-        Single.create((SingleOnSubscribe<Bitmap>) emitter -> {
-            // 使用url
-            String url = mPresenter.getBookShelf().getNoteUrl();
-            if (url == null)
-                url = "";
-            int maxLength = 1273 - 1 - url.length();
-
-            BookSourceBean sourceBean = BookSourceManager.getBookSourceByUrl(mPresenter.getBookShelf().getTag());
-
-            if (sourceBean != null) {
-//                    url=tvBookUrl.getText().toString()+"#"+ gson.toJson(sourceBean).replaceAll("\n\\s*\"[a-zA-Z]+\"(:\"\"|: \"\"| :\"\"| : \"\")\\s*,\\s*\n","\n").trim();
-                url = url + "#" + sourceBean.getJson(maxLength);
-
-                Log.d("QRcode", "Length=" + url.length() + "\n" + url);
-                Bitmap bitmap;
-                QRCodeEncoder.HINTS.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
-                if (url.length() > 300)
-                    bitmap = QRCodeEncoder.syncEncodeQRCode(url, 800);
-                else if (url.length() > 100)
-                    bitmap = QRCodeEncoder.syncEncodeQRCode(url, 500);
-                else
-                    bitmap = QRCodeEncoder.syncEncodeQRCode(url, 300);
-                QRCodeEncoder.HINTS.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
-                emitter.onSuccess(bitmap);
-            }
-        }).compose(RxUtils::toSimpleSingle)
-                .subscribe(new MySingleObserver<Bitmap>() {
-
-                    @Override
-                    public void onSuccess(Bitmap bitmap2) {
-
-                        try {
-                            File file = new File(BookDetailActivity.this.getExternalCacheDir(), binding.tvName.getText().toString() + ".png");
-                            FileOutputStream fOut = new FileOutputStream(file);
-                            bitmap2.compress(Bitmap.CompressFormat.PNG, 80, fOut);
-                            fOut.flush();
-                            fOut.close();
-                            //noinspection ResultOfMethodCallIgnored
-                            file.setReadable(true, false);
-                            Uri contentUri = FileProvider.getUriForFile(BookDetailActivity.this, BuildConfig.APPLICATION_ID + ".fileProvider", file);
-                            final Intent intent = new Intent(Intent.ACTION_SEND);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            intent.putExtra(Intent.EXTRA_STREAM, contentUri);
-                            intent.setType("image/png");
-                            startActivity(Intent.createChooser(intent, "分享书籍"));
-                        } catch (Exception e) {
-                            toast(e.getLocalizedMessage());
-                        }
-                    }
-                });
+        // 墨水屏精简：去掉二维码分享（原依赖 zxing），改为分享书籍链接文本
+        String url = mPresenter.getBookShelf().getNoteUrl();
+        if (url == null) url = "";
+        BookSourceBean sourceBean = BookSourceManager.getBookSourceByUrl(mPresenter.getBookShelf().getTag());
+        String text = url;
+        if (sourceBean != null) {
+            text = text + "#" + sourceBean.getJson(1200);
+        }
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_TEXT, text);
+        startActivity(Intent.createChooser(intent, getString(R.string.share_book)));
     }
 }

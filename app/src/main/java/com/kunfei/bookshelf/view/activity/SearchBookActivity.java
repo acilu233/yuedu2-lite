@@ -32,6 +32,8 @@ import com.kunfei.bookshelf.bean.SearchBookBean;
 import com.kunfei.bookshelf.bean.SearchHistoryBean;
 import com.kunfei.bookshelf.constant.RxBusTag;
 import com.kunfei.bookshelf.databinding.ActivitySearchBookBinding;
+import com.kunfei.bookshelf.fanqie.FanqieBookSource;
+import com.kunfei.bookshelf.fanqie.FanqieInput;
 import com.kunfei.bookshelf.help.BookshelfHelp;
 import com.kunfei.bookshelf.model.BookSourceManager;
 import com.kunfei.bookshelf.presenter.BookDetailPresenter;
@@ -43,7 +45,6 @@ import com.kunfei.bookshelf.utils.SoftInputUtil;
 import com.kunfei.bookshelf.utils.theme.ThemeStore;
 import com.kunfei.bookshelf.view.adapter.SearchBookAdapter;
 import com.kunfei.bookshelf.view.adapter.SearchBookshelfAdapter;
-import com.kunfei.bookshelf.widget.explosion_field.ExplosionField;
 import com.kunfei.bookshelf.widget.recycler.refresh.OnLoadMoreListener;
 
 import java.util.List;
@@ -55,7 +56,6 @@ public class SearchBookActivity extends MBaseActivity<SearchBookContract.Present
 
     private ActivitySearchBookBinding binding;
     private View refreshErrorView;
-    private ExplosionField mExplosionField;
     private SearchBookAdapter searchBookAdapter;
     private SearchView.SearchAutoComplete mSearchAutoComplete;
     private boolean showHistory;
@@ -88,7 +88,6 @@ public class SearchBookActivity extends MBaseActivity<SearchBookContract.Present
 
     @Override
     protected void initData() {
-        mExplosionField = ExplosionField.attach2Window(this);
         searchBookAdapter = new SearchBookAdapter(this);
         searchBookshelfAdapter = new SearchBookshelfAdapter(this);
     }
@@ -100,13 +99,14 @@ public class SearchBookActivity extends MBaseActivity<SearchBookContract.Present
         initSearchView();
         setSupportActionBar(binding.toolbar);
         setupActionBar();
-        binding.fabSearchStop.hide();
+        binding.fabSearchStop.setVisibility(View.GONE);
         binding.fabSearchStop.setBackgroundTintList(Selector.colorBuild()
                 .setDefaultColor(ThemeStore.accentColor(this))
                 .setPressedColor(ColorUtils.darkenColor(ThemeStore.accentColor(this)))
                 .create());
         binding.llSearchHistory.setOnClickListener(null);
         binding.rfRvSearchBooks.setRefreshRecyclerViewAdapter(searchBookAdapter, new LinearLayoutManager(this));
+        binding.rfRvSearchBooks.getRecyclerView().setItemAnimator(null);   // 墨水屏：关掉列表增删动画
         refreshErrorView = LayoutInflater.from(this).inflate(R.layout.view_refresh_error, null);
         refreshErrorView.findViewById(R.id.tv_refresh_again).setOnClickListener(v -> {
             //刷新失败 ，重试
@@ -125,7 +125,7 @@ public class SearchBookActivity extends MBaseActivity<SearchBookContract.Present
         });
 
         binding.fabSearchStop.setOnClickListener(view -> {
-            binding.fabSearchStop.hide();
+            binding.fabSearchStop.setVisibility(View.GONE);
             mPresenter.stopSearch();
         });
         binding.rvBookshelf.setLayoutManager(new FlexboxLayoutManager(this));
@@ -147,6 +147,10 @@ public class SearchBookActivity extends MBaseActivity<SearchBookContract.Present
         getMenuInflater().inflate(R.menu.menu_book_search_activity, menu);
         this.menu = menu;
         initMenu();
+        MenuItem fanqieItem = menu.findItem(R.id.action_fanqie_direct);
+        if (fanqieItem != null) {
+            fanqieItem.setChecked(isFanqieDirect());
+        }
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -156,6 +160,12 @@ public class SearchBookActivity extends MBaseActivity<SearchBookContract.Present
         int id = item.getItemId();
         if (id == R.id.action_book_source_manage) {
             BookSourceActivity.startThis(this, requestSource);
+        } else if (id == R.id.action_fanqie_direct) {
+            boolean enable = !item.isChecked();
+            item.setChecked(enable);
+            setFanqieDirect(enable);
+            toast(enable ? getString(R.string.fanqie_direct_hint) : "已关闭番茄直达", 0, -1);
+            return true;
         } else if (id == android.R.id.home) {
             SoftInputUtil.hideIMM(getCurrentFocus());
             finish();
@@ -197,6 +207,10 @@ public class SearchBookActivity extends MBaseActivity<SearchBookContract.Present
                 if (TextUtils.isEmpty(query))
                     return false;
                 searchKey = query.trim();
+                if (!searchKey.toLowerCase().startsWith("set:") && tryFanqieDirect(searchKey)) {
+                    binding.searchView.clearFocus();
+                    return false;
+                }
                 if (!searchKey.toLowerCase().startsWith("set:")) {
                     toSearch();
                     binding.searchView.clearFocus();
@@ -237,7 +251,7 @@ public class SearchBookActivity extends MBaseActivity<SearchBookContract.Present
                 finish();
             }
             if (showHistory) {
-                binding.fabSearchStop.hide();
+                binding.fabSearchStop.setVisibility(View.GONE);
                 mPresenter.stopSearch();
             }
             openOrCloseHistory(showHistory);
@@ -247,20 +261,19 @@ public class SearchBookActivity extends MBaseActivity<SearchBookContract.Present
     @Override
     protected void bindEvent() {
         binding.tvSearchHistoryClean.setOnClickListener(v -> {
-            mExplosionField.explode(binding.tflSearchHistory, true);
             mPresenter.cleanSearchHistory();
         });
 
         binding.rfRvSearchBooks.setLoadMoreListener(new OnLoadMoreListener() {
             @Override
             public void startLoadMore() {
-                binding.fabSearchStop.show();
+                binding.fabSearchStop.setVisibility(View.VISIBLE);
                 mPresenter.toSearchBooks(null, false);
             }
 
             @Override
             public void loadMoreErrorTryAgain() {
-                binding.fabSearchStop.show();
+                binding.fabSearchStop.setVisibility(View.VISIBLE);
                 mPresenter.toSearchBooks(null, true);
             }
         });
@@ -351,10 +364,6 @@ public class SearchBookActivity extends MBaseActivity<SearchBookContract.Present
                 msg = "已" + (enable ? "启" : "禁") + "用侧边栏书架！";
                 RxBus.get().post(RxBusTag.RECREATE, true);
                 break;
-            case "fade_tts":
-                MApplication.getConfigPreferences().edit().putBoolean("fadeTTS", enable).apply();
-                msg = "已" + (enable ? "启" : "禁") + "用朗读时淡入淡出！";
-                break;
             case "use_regex_in_new_rule":
                 MApplication.getConfigPreferences().edit().putBoolean("useRegexInNewRule", enable).apply();
                 msg = "已" + (enable ? "启" : "禁") + "用新建替换规则时默认使用正则表达式！";
@@ -389,10 +398,68 @@ public class SearchBookActivity extends MBaseActivity<SearchBookContract.Present
             new Handler().postDelayed(() -> {
                 mPresenter.initPage();
                 binding.rfRvSearchBooks.startRefresh();
-                binding.fabSearchStop.show();
+                binding.fabSearchStop.setVisibility(View.VISIBLE);
                 mPresenter.toSearchBooks(searchKey, false);
             }, 300);
         }
+    }
+
+    /**
+     * 番茄直达开关（持久化在配置里）。
+     */
+    private boolean isFanqieDirect() {
+        return MApplication.getConfigPreferences().getBoolean("fanqieDirect", false);
+    }
+
+    private void setFanqieDirect(boolean enable) {
+        MApplication.getConfigPreferences().edit().putBoolean("fanqieDirect", enable).apply();
+        binding.searchView.setQueryHint(getString(enable
+                ? R.string.fanqie_direct_hint : R.string.search_book_key));
+    }
+
+    /**
+     * 番茄直达：链接/分享文案始终识别；纯书号需要先在菜单里勾选"番茄直达"。
+     * 认不出书号就返回 false，交回原版书源搜索。
+     */
+    private boolean tryFanqieDirect(String text) {
+        String lower = text.toLowerCase();
+        boolean looksFanqie = lower.contains("fanqienovel.com") || lower.contains("番茄");
+        if (!looksFanqie && !isFanqieDirect()) {
+            return false;
+        }
+        String bookId = FanqieInput.INSTANCE.extractBookId(text);
+        if (bookId == null) {
+            if (looksFanqie) {
+                toast("没认出番茄书号，按普通搜索处理", 0, -1);
+            }
+            return false;
+        }
+        openFanqieBook(bookId);
+        return true;
+    }
+
+    /** 直接打开番茄书的详情页（详情页会通过内置源拉到书名/作者/简介/目录）。 */
+    private void openFanqieBook(String bookId) {
+        FanqieBookSource.INSTANCE.ensureInserted();
+        SearchBookBean searchBook = new SearchBookBean();
+        searchBook.setNoteUrl(FanqieBookSource.INSTANCE.tocUrl(bookId));
+        searchBook.setTag(FanqieBookSource.URL);
+        searchBook.setOrigin(FanqieBookSource.NAME);
+        searchBook.setName(getString(R.string.fanqie_direct_placeholder));
+        searchBook.setAuthor("");
+        searchBook.setKind("");
+        searchBook.setIntroduce("");
+        searchBook.setCoverUrl("");
+        searchBook.setLastChapter("");
+        searchBook.setChapterUrl("");
+        searchBook.setAddTime(System.currentTimeMillis());
+        searchBook.setUpTime(System.currentTimeMillis());
+        String dataKey = String.valueOf(System.currentTimeMillis());
+        Intent intent = new Intent(SearchBookActivity.this, BookDetailActivity.class);
+        intent.putExtra("openFrom", BookDetailPresenter.FROM_SEARCH);
+        intent.putExtra("data_key", dataKey);
+        BitIntentDataManager.getInstance().putData(dataKey, searchBook);
+        startActivityByAnim(intent, android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
     private void openOrCloseHistory(Boolean open) {
@@ -422,7 +489,6 @@ public class SearchBookActivity extends MBaseActivity<SearchBookContract.Present
                 });
                 tagView.setOnLongClickListener(view -> {
                     SearchHistoryBean historyBean = (SearchHistoryBean) view.getTag();
-                    mExplosionField.explode(view);
                     view.setOnLongClickListener(null);
                     mPresenter.cleanSearchHistory(historyBean);
                     return true;
@@ -455,13 +521,13 @@ public class SearchBookActivity extends MBaseActivity<SearchBookContract.Present
 
     @Override
     public void refreshFinish(Boolean isAll) {
-        binding.fabSearchStop.hide();
+        binding.fabSearchStop.setVisibility(View.GONE);
         binding.rfRvSearchBooks.finishRefresh(isAll, true);
     }
 
     @Override
     public void loadMoreFinish(Boolean isAll) {
-        binding.fabSearchStop.hide();
+        binding.fabSearchStop.setVisibility(View.GONE);
         binding.rfRvSearchBooks.finishLoadMore(isAll, true);
     }
 
@@ -483,7 +549,6 @@ public class SearchBookActivity extends MBaseActivity<SearchBookContract.Present
     @Override
     protected void onDestroy() {
         mPresenter.stopSearch();
-        mExplosionField.clear();
         super.onDestroy();
     }
 
@@ -511,7 +576,7 @@ public class SearchBookActivity extends MBaseActivity<SearchBookContract.Present
     @Override
     public void finish() {
         super.finish();
-        overridePendingTransition(0, android.R.anim.fade_out);
+        overridePendingTransition(0, 0);
     }
 
     @Override

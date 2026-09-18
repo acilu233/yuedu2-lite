@@ -1,6 +1,7 @@
 package com.kunfei.bookshelf.help;
 
 import android.annotation.SuppressLint;
+import android.os.Build;
 
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
@@ -22,7 +23,12 @@ public class SSLSocketClient {
         try {
             SSLContext sslContext = SSLContext.getInstance("SSL");
             sslContext.init(null, new TrustManager[]{createTrustAllManager()}, new SecureRandom());
-            return sslContext.getSocketFactory();
+            SSLSocketFactory factory = sslContext.getSocketFactory();
+            // 4.4(API19)：系统默认不启用 TLS 1.2，不显式打开的话 https 书源基本都握手失败
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT_WATCH) {
+                return new Tls12SocketFactory(factory);
+            }
+            return factory;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

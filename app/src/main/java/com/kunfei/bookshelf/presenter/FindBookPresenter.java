@@ -1,7 +1,6 @@
 //Copyright (c) 2017. 章钦豪. All rights reserved.
 package com.kunfei.bookshelf.presenter;
 
-import static com.kunfei.bookshelf.constant.AppConstant.SCRIPT_ENGINE;
 
 import android.util.Pair;
 import android.widget.Toast;
@@ -84,7 +83,7 @@ public class FindBookPresenter extends BasePresenterImpl<FindBookContract.View> 
         SimpleBindings bindings = new SimpleBindings();
         bindings.put("java", new AnalyzeRule(null, bookSourceBean));
         bindings.put("baseUrl", baseUrl);
-        return SCRIPT_ENGINE.eval(jsStr, bindings);
+        return com.kunfei.bookshelf.constant.AppConstant.getScriptEngine().eval(jsStr, bindings);
     }
 
     @Override

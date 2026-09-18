@@ -24,7 +24,6 @@
             android:gravity="center_vertical"
             android:theme="?attr/actionBarStyle"
             android:transitionName="sharedView"
-            app:layout_scrollFlags="scroll|enterAlways"
             app:popupTheme="@style/AppTheme.PopupOverlay">
 
             <androidx.cardview.widget.CardView

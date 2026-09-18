@@ -104,8 +104,6 @@ object Restore {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-            var donateHb = MApplication.getConfigPreferences().getLong("DonateHb", 0)
-            donateHb = if (donateHb > System.currentTimeMillis()) 0 else donateHb
             Preferences.getSharedPreferences(MApplication.getInstance(), path, "config")?.all?.map {
                 val edit = MApplication.getConfigPreferences().edit()
                 when (val value = it.value) {
@@ -116,7 +114,6 @@ object Restore {
                     is String -> edit.putString(it.key, value)
                     else -> Unit
                 }
-                edit.putLong("DonateHb", donateHb)
                 edit.putInt("versionCode", MApplication.getVersionCode())
                 edit.apply()
             }

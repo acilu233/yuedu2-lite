@@ -25,13 +25,13 @@ import java.util.Map;
 import static com.kunfei.bookshelf.widget.page.PageLoader.DEFAULT_MARGIN_WIDTH;
 
 public class ReadBookControl {
-    private static final int DEFAULT_BG = 1;
+    /** 墨水屏：阅读配色只保留两套 —— 0=白底黑字，1=黑底白字 */
+    private static final int DEFAULT_BG = 0;
+    private static final int BG_COUNT = 2;
     private int textDrawableIndex = DEFAULT_BG;
     private List<Map<String, Integer>> textDrawable;
     private Bitmap bgBitmap;
     private int screenDirection;
-    private int speechRate;
-    private boolean speechRateFollowSys;
     private int textSize;
     private int textColor;
     private boolean bgIsColor;
@@ -48,7 +48,6 @@ public class ReadBookControl {
     private Boolean textBold;
     private Boolean canClickTurn;
     private Boolean canKeyTurn;
-    private Boolean readAloudCanKeyTurn;
     private int CPM;
     private Boolean clickAllNext;
     private Boolean showTitle;
@@ -94,13 +93,16 @@ public class ReadBookControl {
 
     public void updateReaderSettings() {
         this.lightNovelParagraph = preferences.getBoolean("light_novel_paragraph", false);
-        this.hideStatusBar = preferences.getBoolean("hide_status_bar", false);
-        this.hideNavigationBar = preferences.getBoolean("hide_navigation_bar", false);
+        // 墨水屏默认：阅读时全屏（状态栏+导航栏都隐藏）。
+        // 调出菜单/弹层时会重新显示系统栏，但阅读窗口始终按整屏布局
+        // （见 ReadBookActivity.initImmersionBar 的 translucent 处理），
+        // 所以系统栏只覆盖内容，不会挤动正文、不会重新排版。
+        this.hideStatusBar = preferences.getBoolean("hide_status_bar", true);
+        this.hideNavigationBar = preferences.getBoolean("hide_navigation_bar", true);
         this.indent = preferences.getInt("indent", 2);
         this.textSize = preferences.getInt("textSize", 20);
         this.canClickTurn = preferences.getBoolean("canClickTurn", true);
         this.canKeyTurn = preferences.getBoolean("canKeyTurn", true);
-        this.readAloudCanKeyTurn = preferences.getBoolean("readAloudCanKeyTurn", false);
         this.lineMultiplier = preferences.getFloat("lineMultiplier", 1);
         this.paragraphSize = preferences.getFloat("paragraphSize", 1);
         this.CPM = preferences.getInt("CPM", defaultCPM) > maxCPM
@@ -109,8 +111,6 @@ public class ReadBookControl {
         this.fontPath = preferences.getString("fontPath", null);
         this.textConvert = preferences.getInt("textConvertInt", 0);
         this.textBold = preferences.getBoolean("textBold", false);
-        this.speechRate = preferences.getInt("speechRate", 10);
-        this.speechRateFollowSys = preferences.getBoolean("speechRateFollowSys", true);
         this.showTitle = preferences.getBoolean("showTitle", true);
         this.showTimeBattery = preferences.getBoolean("showTimeBattery", true);
         this.showLine = preferences.getBoolean("showLine", true);
@@ -123,7 +123,8 @@ public class ReadBookControl {
         this.tipPaddingTop = preferences.getInt("tipPaddingTop", 0);
         this.tipPaddingRight = preferences.getInt("tipPaddingRight", DEFAULT_MARGIN_WIDTH);
         this.tipPaddingBottom = preferences.getInt("tipPaddingBottom", 0);
-        this.pageMode = preferences.getInt("pageMode", 0);
+        // 墨水屏默认：无翻页动画（0=覆盖 1=仿真 2=滑动 3=滚动 4=无动画）
+        this.pageMode = preferences.getInt("pageMode", 4);
         this.screenDirection = preferences.getInt("screenDirection", 0);
         this.navBarColor = preferences.getInt("navBarColorInt", 0);
         this.textLetterSpacing = preferences.getFloat("textLetterSpacing", 0);
@@ -135,50 +136,32 @@ public class ReadBookControl {
     private void initTextDrawable() {
         if (null == textDrawable) {
             textDrawable = new ArrayList<>();
+            // 白天：白底黑字
             Map<String, Integer> temp1 = new HashMap<>();
-            temp1.put("textColor", Color.parseColor("#3E3D3B"));
+            temp1.put("textColor", Color.parseColor("#000000"));
             temp1.put("bgIsColor", 1);
-            temp1.put("textBackground", Color.parseColor("#F3F3F3"));
+            temp1.put("textBackground", Color.parseColor("#FFFFFF"));
             temp1.put("darkStatusIcon", 1);
             textDrawable.add(temp1);
 
+            // 夜间：黑底白字
             Map<String, Integer> temp2 = new HashMap<>();
-            temp2.put("textColor", Color.parseColor("#5E432E"));
+            temp2.put("textColor", Color.parseColor("#FFFFFF"));
             temp2.put("bgIsColor", 1);
-            temp2.put("textBackground", Color.parseColor("#C6BAA1"));
-            temp2.put("darkStatusIcon", 1);
+            temp2.put("textBackground", Color.parseColor("#000000"));
+            temp2.put("darkStatusIcon", 0);
             textDrawable.add(temp2);
-
-            Map<String, Integer> temp3 = new HashMap<>();
-            temp3.put("textColor", Color.parseColor("#22482C"));
-            temp3.put("bgIsColor", 1);
-            temp3.put("textBackground", Color.parseColor("#E1F1DA"));
-            temp3.put("darkStatusIcon", 1);
-            textDrawable.add(temp3);
-
-            Map<String, Integer> temp4 = new HashMap<>();
-            temp4.put("textColor", Color.parseColor("#FFFFFF"));
-            temp4.put("bgIsColor", 1);
-            temp4.put("textBackground", Color.parseColor("#015A86"));
-            temp4.put("darkStatusIcon", 0);
-            textDrawable.add(temp4);
-
-            Map<String, Integer> temp5 = new HashMap<>();
-            temp5.put("textColor", Color.parseColor("#808080"));
-            temp5.put("bgIsColor", 1);
-            temp5.put("textBackground", Color.parseColor("#000000"));
-            temp5.put("darkStatusIcon", 0);
-            textDrawable.add(temp5);
         }
     }
 
     public void initTextDrawableIndex() {
         if (getIsNightTheme()) {
-            textDrawableIndex = preferences.getInt("textDrawableIndexNight", 4);
+            textDrawableIndex = preferences.getInt("textDrawableIndexNight", 1);
         } else {
             textDrawableIndex = preferences.getInt("textDrawableIndex", DEFAULT_BG);
         }
-        if (textDrawableIndex == -1) {
+        // 老版本存过 0~4 的配色索引，现在只剩两套，越界就回到默认（否则阅读页会取色越界）
+        if (textDrawableIndex < 0 || textDrawableIndex >= BG_COUNT) {
             textDrawableIndex = DEFAULT_BG;
         }
         initPageStyle();
@@ -209,7 +192,7 @@ public class ReadBookControl {
             return;
         }
         bgIsColor = true;
-        bgColor = textDrawable.get(textDrawableIndex).get("textBackground");
+        bgColor = getDrawableSafely(textDrawableIndex).get("textBackground");
     }
 
     private void setTextDrawable() {
@@ -218,11 +201,8 @@ public class ReadBookControl {
     }
 
     public int getTextColor(int textDrawableIndex) {
-        if (preferences.getInt("textColor" + textDrawableIndex, 0) != 0) {
-            return preferences.getInt("textColor" + textDrawableIndex, 0);
-        } else {
-            return getDefaultTextColor(textDrawableIndex);
-        }
+        // 墨水屏：只用白/黑两套配色，忽略历史保存的自定义文字颜色
+        return getDefaultTextColor(textDrawableIndex);
     }
 
     public void setTextColor(int textDrawableIndex, int textColor) {
@@ -252,15 +232,15 @@ public class ReadBookControl {
                     color = getBgColor(textDrawableIndex);
                     return new ColorDrawable(color);
             }
-            if (textDrawable.get(textDrawableIndex).get("bgIsColor") != 0) {
-                color = textDrawable.get(textDrawableIndex).get("textBackground");
+            if (getDrawableSafely(textDrawableIndex).get("bgIsColor") != 0) {
+                color = getDrawableSafely(textDrawableIndex).get("textBackground");
                 return new ColorDrawable(color);
             } else {
                 return getDefaultBgDrawable(textDrawableIndex, context);
             }
         } catch (Exception e) {
-            if (textDrawable.get(textDrawableIndex).get("bgIsColor") != 0) {
-                color = textDrawable.get(textDrawableIndex).get("textBackground");
+            if (getDrawableSafely(textDrawableIndex).get("bgIsColor") != 0) {
+                color = getDrawableSafely(textDrawableIndex).get("textBackground");
                 return new ColorDrawable(color);
             } else {
                 return getDefaultBgDrawable(textDrawableIndex, context);
@@ -270,8 +250,8 @@ public class ReadBookControl {
 
     @SuppressWarnings("ConstantConditions")
     public Drawable getDefaultBgDrawable(int textDrawableIndex, Context context) {
-        if (textDrawable.get(textDrawableIndex).get("bgIsColor") != 0) {
-            return new ColorDrawable(textDrawable.get(textDrawableIndex).get("textBackground"));
+        if (getDrawableSafely(textDrawableIndex).get("bgIsColor") != 0) {
+            return new ColorDrawable(getDrawableSafely(textDrawableIndex).get("textBackground"));
         } else {
             return context.getResources().getDrawable(getDefaultBg(textDrawableIndex));
         }
@@ -299,12 +279,25 @@ public class ReadBookControl {
 
     @SuppressWarnings("ConstantConditions")
     public int getDefaultTextColor(int textDrawableIndex) {
-        return textDrawable.get(textDrawableIndex).get("textColor");
+        return getDrawableSafely(textDrawableIndex).get("textColor");
     }
 
     @SuppressWarnings("ConstantConditions")
     private int getDefaultBg(int textDrawableIndex) {
-        return textDrawable.get(textDrawableIndex).get("textBackground");
+        return getDrawableSafely(textDrawableIndex).get("textBackground");
+    }
+
+    /**
+     * 取配色表（带兜底）。
+     * 老版本存过 0~4 的配色索引，现在只剩两套；任何直接传旧索引的调用都必须回落到默认，
+     * 否则 IndexOutOfBoundsException 会让阅读页一打开就崩。
+     */
+    private Map<String, Integer> getDrawableSafely(int index) {
+        initTextDrawable();
+        if (index < 0 || index >= textDrawable.size()) {
+            index = DEFAULT_BG;
+        }
+        return textDrawable.get(index);
     }
 
     public int getBgColor(int index) {
@@ -432,16 +425,6 @@ public class ReadBookControl {
         return textBold;
     }
 
-    public Boolean getCanKeyTurn(Boolean isPlay) {
-        if (!canKeyTurn) {
-            return false;
-        } else if (readAloudCanKeyTurn) {
-            return true;
-        } else {
-            return !isPlay;
-        }
-    }
-
     public Boolean getCanKeyTurn() {
         return canKeyTurn;
     }
@@ -450,17 +433,6 @@ public class ReadBookControl {
         this.canKeyTurn = canKeyTurn;
         preferences.edit()
                 .putBoolean("canKeyTurn", canKeyTurn)
-                .apply();
-    }
-
-    public Boolean getAloudCanKeyTurn() {
-        return readAloudCanKeyTurn;
-    }
-
-    public void setAloudCanKeyTurn(Boolean canAloudKeyTurn) {
-        this.readAloudCanKeyTurn = canAloudKeyTurn;
-        preferences.edit()
-                .putBoolean("readAloudCanKeyTurn", canAloudKeyTurn)
                 .apply();
     }
 
@@ -528,28 +500,6 @@ public class ReadBookControl {
         this.clickAllNext = clickAllNext;
         preferences.edit()
                 .putBoolean("clickAllNext", clickAllNext)
-                .apply();
-    }
-
-    public int getSpeechRate() {
-        return speechRate;
-    }
-
-    public void setSpeechRate(int speechRate) {
-        this.speechRate = speechRate;
-        preferences.edit()
-                .putInt("speechRate", speechRate)
-                .apply();
-    }
-
-    public boolean isSpeechRateFollowSys() {
-        return speechRateFollowSys;
-    }
-
-    public void setSpeechRateFollowSys(boolean speechRateFollowSys) {
-        this.speechRateFollowSys = speechRateFollowSys;
-        preferences.edit()
-                .putBoolean("speechRateFollowSys", speechRateFollowSys)
                 .apply();
     }
 
@@ -633,7 +583,8 @@ public class ReadBookControl {
 
     @SuppressWarnings("ConstantConditions")
     public boolean getDarkStatusIcon(int textDrawableIndex) {
-        return preferences.getBoolean("darkStatusIcon" + textDrawableIndex, textDrawable.get(textDrawableIndex).get("darkStatusIcon") != 0);
+        return preferences.getBoolean("darkStatusIcon" + textDrawableIndex,
+                getDrawableSafely(textDrawableIndex).get("darkStatusIcon") != 0);
     }
 
     public void setDarkStatusIcon(int textDrawableIndex, Boolean darkStatusIcon) {

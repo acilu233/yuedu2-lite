@@ -31,7 +31,6 @@ import com.kunfei.bookshelf.help.permission.PermissionsCompat;
 import com.kunfei.bookshelf.model.BookSourceManager;
 import com.kunfei.bookshelf.presenter.BookSourcePresenter;
 import com.kunfei.bookshelf.presenter.contract.BookSourceContract;
-import com.kunfei.bookshelf.service.ShareService;
 import com.kunfei.bookshelf.utils.ACache;
 import com.kunfei.bookshelf.utils.RealPathUtil;
 import com.kunfei.bookshelf.utils.StringUtils;
@@ -141,6 +140,7 @@ public class BookSourceActivity extends MBaseActivity<BookSourceContract.Present
         binding.recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayout.VERTICAL));
         adapter = new BookSourceAdapter(this);
         binding.recyclerView.setAdapter(adapter);
+        binding.recyclerView.setItemAnimator(null);   // 墨水屏：关掉列表增删动画
         itemTouchCallback = new ItemTouchCallback();
         itemTouchCallback.setOnItemTouchCallbackListener(adapter.getItemTouchCallbackListener());
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(itemTouchCallback);
@@ -191,29 +191,36 @@ public class BookSourceActivity extends MBaseActivity<BookSourceContract.Present
 
     @Override
     public void refreshBookSource() {
-        if (isSearch) {
+        // 低配设备：书源列表可能有几百条，查询放后台线程，查完再回主线程刷新（避免打开页面时主线程卡住）
+        final boolean search = isSearch;
+        final String query = binding.searchView.getQuery().toString();
+        new Thread(() -> {
+            long t0 = System.currentTimeMillis();
             List<BookSourceBean> sourceBeanList;
-            if (binding.searchView.getQuery().toString().equals("enabled")) {
-                sourceBeanList = DbHelper.getDaoSession().getBookSourceBeanDao().queryBuilder()
-                        .where(BookSourceBeanDao.Properties.Enable.eq(1))
-                        .orderRaw(BookSourceManager.getBookSourceSort())
-                        .orderAsc(BookSourceBeanDao.Properties.SerialNumber)
-                        .list();
+            if (search) {
+                if (query.equals("enabled")) {
+                    sourceBeanList = DbHelper.getDaoSession().getBookSourceBeanDao().queryBuilder()
+                            .where(BookSourceBeanDao.Properties.Enable.eq(1))
+                            .orderRaw(BookSourceManager.getBookSourceSort())
+                            .orderAsc(BookSourceBeanDao.Properties.SerialNumber)
+                            .list();
+                } else {
+                    String term = "%" + query + "%";
+                    sourceBeanList = DbHelper.getDaoSession().getBookSourceBeanDao().queryBuilder()
+                            .whereOr(BookSourceBeanDao.Properties.BookSourceName.like(term),
+                                    BookSourceBeanDao.Properties.BookSourceGroup.like(term),
+                                    BookSourceBeanDao.Properties.BookSourceUrl.like(term))
+                            .orderRaw(BookSourceManager.getBookSourceSort())
+                            .orderAsc(BookSourceBeanDao.Properties.SerialNumber)
+                            .list();
+                }
             } else {
-                String term = "%" + binding.searchView.getQuery() + "%";
-                sourceBeanList = DbHelper.getDaoSession().getBookSourceBeanDao().queryBuilder()
-                        .whereOr(BookSourceBeanDao.Properties.BookSourceName.like(term),
-                                BookSourceBeanDao.Properties.BookSourceGroup.like(term),
-                                BookSourceBeanDao.Properties.BookSourceUrl.like(term))
-                        .orderRaw(BookSourceManager.getBookSourceSort())
-                        .orderAsc(BookSourceBeanDao.Properties.SerialNumber)
-                        .list();
+                sourceBeanList = BookSourceManager.getAllBookSource();
             }
-
-            adapter.resetDataS(sourceBeanList);
-        } else {
-            adapter.resetDataS(BookSourceManager.getAllBookSource());
-        }
+            android.util.Log.i("Boot", "书源列表查询=" + (System.currentTimeMillis() - t0) + "ms 条数=" + sourceBeanList.size());
+            final List<BookSourceBean> result = sourceBeanList;
+            runOnUiThread(() -> adapter.resetDataS(result));
+        }, "load-book-source").start();
     }
 
     public void delBookSource(BookSourceBean bookSource) {
@@ -268,8 +275,6 @@ public class BookSourceActivity extends MBaseActivity<BookSourceContract.Present
             selectBookSourceFile();
         } else if (id == R.id.action_import_book_source_onLine) {
             importBookSourceOnLine();
-        } else if (id == R.id.action_import_book_source_rwm) {
-            scanBookSource();
         } else if (id == R.id.action_revert_selection) {
             revertSelection();
         } else if (id == R.id.action_del_select) {
@@ -286,8 +291,6 @@ public class BookSourceActivity extends MBaseActivity<BookSourceContract.Present
             upSourceSort(2);
         } else if (id == R.id.show_enabled) {
             binding.searchView.setQuery("enabled", false);
-        } else if (id == R.id.action_share_wifi) {
-            ShareService.startThis(this, adapter.getSelectDataList());
         } else if (id == android.R.id.home) {
             finish();
         }
@@ -322,11 +325,6 @@ public class BookSourceActivity extends MBaseActivity<BookSourceContract.Present
 
     public int getSort() {
         return preferences.getInt("SourceSort", 0);
-    }
-
-    private void scanBookSource() {
-        Intent intent = new Intent(this, QRCodeScanActivity.class);
-        startActivityForResult(intent, REQUEST_QR);
     }
 
     private void addBookSource() {

@@ -20,7 +20,6 @@ import com.kunfei.bookshelf.help.ProcessTextHelp
 import com.kunfei.bookshelf.help.permission.Permissions
 import com.kunfei.bookshelf.help.permission.PermissionsCompat
 import com.kunfei.bookshelf.help.storage.BackupRestoreUi.selectBackupFolder
-import com.kunfei.bookshelf.service.WebService
 import com.kunfei.bookshelf.utils.FileUtils
 import com.kunfei.bookshelf.view.activity.SettingActivity
 import com.kunfei.bookshelf.widget.filepicker.picker.FilePicker
@@ -73,7 +72,6 @@ class SettingsFragment : PreferenceFragment(), OnSharedPreferenceChangeListener 
             }
             "behaviorMain" -> RxBus.get().post(RxBusTag.RECREATE, true)
             "process_text" -> ProcessTextHelp.setProcessTextEnable(sharedPreferences.getBoolean("process_text", true))
-            "webPort" -> WebService.upHttpServer(activity)
             "backupPath" -> upPreferenceSummary(key, sharedPreferences.getString(key, null))
             downloadPathKey -> upPreferenceSummary(downloadPathKey, MApplication.downloadPath)
         }
@@ -82,8 +80,6 @@ class SettingsFragment : PreferenceFragment(), OnSharedPreferenceChangeListener 
             RxBus.get().post(RxBusTag.RECREATE, true)
         } else if (key == "process_text") {
             ProcessTextHelp.setProcessTextEnable(sharedPreferences.getBoolean("process_text", true))
-        } else if (key == "webPort") {
-            WebService.upHttpServer(activity)
         }
     }
 
@@ -105,10 +101,6 @@ class SettingsFragment : PreferenceFragment(), OnSharedPreferenceChangeListener 
             }
             "backupPath" -> {
                 selectBackupFolder(activity)
-            }
-            "webDavSetting" -> {
-                val webDavSettingsFragment = WebDavSettingsFragment()
-                fragmentManager.beginTransaction().replace(R.id.settingsFrameLayout, webDavSettingsFragment, "webDavSettings").commit()
             }
             "clearCache" -> {
                 alert {

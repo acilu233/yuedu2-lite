@@ -9,6 +9,7 @@ import com.kunfei.bookshelf.DbHelper;
 import com.kunfei.bookshelf.MApplication;
 import com.kunfei.bookshelf.base.BaseModelImpl;
 import com.kunfei.bookshelf.bean.BookSourceBean;
+import com.kunfei.bookshelf.bean.BookSource3Converter;
 import com.kunfei.bookshelf.dao.BookSourceBeanDao;
 import com.kunfei.bookshelf.help.SourceHelp;
 import com.kunfei.bookshelf.model.analyzeRule.AnalyzeHeaders;
@@ -194,7 +195,9 @@ public class BookSourceManager {
         return Observable.error(new Exception("不是Json或Url格式"));
     }
 
-    private static Observable<List<BookSourceBean>> importBookSourceFromJson(String json) {
+    private static Observable<List<BookSourceBean>> importBookSourceFromJson(String rawJson) {
+        // 阅读3.0书源 → 2.0：原来只有编辑界面粘贴会转换，批量导入不会，导致 3.0 书源导入后规则全空
+        String json = BookSource3Converter.convertIfNeeded(rawJson);
         return Observable.create(e -> {
             List<BookSourceBean> bookSourceBeans = new ArrayList<>();
             if (StringUtils.isJsonArray(json)) {

@@ -86,7 +86,7 @@ public class CheckSourceService extends Service {
                 return checkIndex;
             }
         };
-        threadsNum = preference.getInt(this.getString(R.string.pk_threads_num), 6);
+        threadsNum = preference.getInt(this.getString(R.string.pk_threads_num), 3);
         executorService = Executors.newFixedThreadPool(threadsNum);
         scheduler = Schedulers.from(executorService);
         compositeDisposable = new CompositeDisposable();
@@ -135,7 +135,7 @@ public class CheckSourceService extends Service {
      * 更新通知
      */
     private void updateNotification(int state, String msg) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, MApplication.channelIdReadAloud)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, MApplication.channelIdDownload)
                 .setSmallIcon(R.drawable.ic_network_check)
                 .setOngoing(true)
                 .setContentTitle(getString(R.string.check_book_source))

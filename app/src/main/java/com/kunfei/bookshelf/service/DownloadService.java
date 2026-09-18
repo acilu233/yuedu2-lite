@@ -71,7 +71,7 @@ public class DownloadService extends Service {
         startForeground(notificationId, notification);
 
         SharedPreferences preferences = getSharedPreferences("CONFIG", 0);
-        threadsNum = preferences.getInt(this.getString(R.string.pk_threads_num), 4);
+        threadsNum = preferences.getInt(this.getString(R.string.pk_threads_num), 2);
         executor = Executors.newFixedThreadPool(threadsNum);
         scheduler = Schedulers.from(executor);
     }

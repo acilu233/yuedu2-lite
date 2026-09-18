@@ -227,26 +227,21 @@ public abstract class MBaseActivity<T extends IPresenter> extends BaseActivity<T
     @Override
     public void startActivity(Intent intent) {
         super.startActivity(intent);
-        if (MApplication.isEInkMode) {
-            overridePendingTransition(R.anim.anim_none, R.anim.anim_none);
-        }
+        // 墨水屏：一律不做 Activity 切换动画（原来只在"墨水屏模式"下才关）
+        overridePendingTransition(R.anim.anim_none, R.anim.anim_none);
     }
 
     @SuppressWarnings("deprecation")
     @Override
     public void startActivityForResult(Intent intent, int requestCode, @Nullable Bundle options) {
         super.startActivityForResult(intent, requestCode, options);
-        if (MApplication.isEInkMode) {
-            overridePendingTransition(R.anim.anim_none, R.anim.anim_none);
-        }
+        overridePendingTransition(R.anim.anim_none, R.anim.anim_none);
     }
 
     @Override
     public void finish() {
         SoftInputUtil.hideIMM(getCurrentFocus());
         super.finish();
-        if (MApplication.isEInkMode) {
-            overridePendingTransition(R.anim.anim_none, R.anim.anim_none);
-        }
+        overridePendingTransition(R.anim.anim_none, R.anim.anim_none);
     }
 }

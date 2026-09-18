@@ -18,10 +18,6 @@ import com.kunfei.bookshelf.dao.BookShelfBeanDao;
 import com.kunfei.bookshelf.dao.BookmarkBeanDao;
 import com.kunfei.bookshelf.utils.StringUtils;
 
-import net.ricecode.similarity.JaroWinklerStrategy;
-import net.ricecode.similarity.StringSimilarityService;
-import net.ricecode.similarity.StringSimilarityServiceImpl;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -44,6 +40,49 @@ public class BookshelfHelp {
 
     public static String getCachePathName(String bookName, String tag) {
         return formatFolderName(bookName + "-" + tag);
+    }
+
+    /**
+     * Jaro-Winkler 相似度（自己实现，替代原来的 string-similarity 库）。
+     * 用途：换源/目录更新时按章节名找对应章节。
+     */
+    private static double jaroWinkler(String a, String b) {
+        if (a == null || b == null) return 0;
+        if (a.equals(b)) return 1;
+        int l1 = a.length(), l2 = b.length();
+        if (l1 == 0 || l2 == 0) return 0;
+        int window = Math.max(l1, l2) / 2 - 1;
+        if (window < 0) window = 0;
+        boolean[] m1 = new boolean[l1], m2 = new boolean[l2];
+        int matches = 0;
+        for (int i = 0; i < l1; i++) {
+            int start = Math.max(0, i - window);
+            int end = Math.min(l2 - 1, i + window);
+            for (int j = start; j <= end; j++) {
+                if (!m2[j] && a.charAt(i) == b.charAt(j)) {
+                    m1[i] = true;
+                    m2[j] = true;
+                    matches++;
+                    break;
+                }
+            }
+        }
+        if (matches == 0) return 0;
+        int transpositions = 0, k = 0;
+        for (int i = 0; i < l1; i++) {
+            if (!m1[i]) continue;
+            while (!m2[k]) k++;
+            if (a.charAt(i) != b.charAt(k)) transpositions++;
+            k++;
+        }
+        double m = matches;
+        double jaro = (m / l1 + m / l2 + (m - transpositions / 2.0) / m) / 3.0;
+        int prefix = 0;
+        for (int i = 0; i < Math.min(4, Math.min(l1, l2)); i++) {
+            if (a.charAt(i) == b.charAt(i)) prefix++;
+            else break;
+        }
+        return jaro + prefix * 0.1 * (1 - jaro);
     }
 
     @SuppressLint("DefaultLocale")
@@ -148,10 +187,9 @@ public class BookshelfHelp {
         int newIndex = 0;
         int newNum = 0;
         if (!oldName.isEmpty()) {
-            StringSimilarityService service = new StringSimilarityServiceImpl(new JaroWinklerStrategy());
             for (int i = min; i <= max; i++) {
                 String newName = getPureChapterName(newChapterList.get(i).getDurChapterName());
-                double temp = service.score(oldName, newName);
+                double temp = jaroWinkler(oldName, newName);
                 if (temp > nameSim) {
                     nameSim = temp;
                     newIndex = i;

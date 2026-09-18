@@ -25,8 +25,6 @@ import android.widget.TextView;
 import androidx.appcompat.app.ActionBar;
 
 import com.hwangjr.rxbus.RxBus;
-import com.jaredrummler.android.colorpicker.ColorPickerDialog;
-import com.jaredrummler.android.colorpicker.ColorPickerDialogListener;
 import com.kunfei.basemvplib.impl.IPresenter;
 import com.kunfei.bookshelf.R;
 import com.kunfei.bookshelf.base.MBaseActivity;
@@ -49,7 +47,7 @@ import java.util.List;
 
 import kotlin.Unit;
 
-public class ReadStyleActivity extends MBaseActivity<IPresenter> implements ColorPickerDialogListener {
+public class ReadStyleActivity extends MBaseActivity<IPresenter> {
     private final int ResultSelectBg = 103;
     private final int SELECT_TEXT_COLOR = 201;
     private final int SELECT_BG_COLOR = 301;
@@ -136,22 +134,7 @@ public class ReadStyleActivity extends MBaseActivity<IPresenter> implements Colo
                 binding.llBottom.setVisibility(View.GONE);
             }
         });
-        //选择文字颜色
-        binding.tvSelectTextColor.setOnClickListener(view ->
-                ColorPickerDialog.newBuilder()
-                        .setColor(textColor)
-                        .setShowAlphaSlider(false)
-                        .setDialogType(ColorPickerDialog.TYPE_CUSTOM)
-                        .setDialogId(SELECT_TEXT_COLOR)
-                        .show(ReadStyleActivity.this));
-        //选择背景颜色
-        binding.tvSelectBgColor.setOnClickListener(view ->
-                ColorPickerDialog.newBuilder()
-                        .setColor(bgColor)
-                        .setShowAlphaSlider(false)
-                        .setDialogType(ColorPickerDialog.TYPE_CUSTOM)
-                        .setDialogId(SELECT_BG_COLOR)
-                        .show(ReadStyleActivity.this));
+        // 墨水屏：不再提供自定义文字/背景颜色（只保留黑白色板）
 
         //背景图列表
         bgImgListAdapter = new BgImgListAdapter(this);
@@ -310,35 +293,6 @@ public class ReadStyleActivity extends MBaseActivity<IPresenter> implements Colo
                 }
             }
         }
-    }
-
-    /**
-     * Callback that is invoked when a color is selected from the color picker dialog.
-     * @param dialogId The dialog id used to create the dialog instance.
-     * @param color    The selected color
-     */
-    @Override
-    public void onColorSelected(int dialogId, int color) {
-        switch (dialogId) {
-            case SELECT_TEXT_COLOR:
-                textColor = color;
-                upText();
-                break;
-            case SELECT_BG_COLOR:
-                bgCustom = 1;
-                bgColor = color;
-                bgDrawable = new ColorDrawable(bgColor);
-                upBg();
-        }
-    }
-
-    /**
-     * Callback that is invoked when the color picker dialog was dismissed.
-     * @param dialogId The dialog id used to create the dialog instance.
-     */
-    @Override
-    public void onDialogDismissed(int dialogId) {
-
     }
 
     private static class BgImgListAdapter extends BaseAdapter {

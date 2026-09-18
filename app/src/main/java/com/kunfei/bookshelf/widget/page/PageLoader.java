@@ -23,7 +23,6 @@ import com.kunfei.bookshelf.constant.AppConstant;
 import com.kunfei.bookshelf.help.BookshelfHelp;
 import com.kunfei.bookshelf.help.ChapterContentHelp;
 import com.kunfei.bookshelf.help.ReadBookControl;
-import com.kunfei.bookshelf.service.ReadAloudService;
 import com.kunfei.bookshelf.utils.RxUtils;
 import com.kunfei.bookshelf.utils.ScreenUtils;
 import com.kunfei.bookshelf.utils.StringUtils;
@@ -129,10 +128,6 @@ public abstract class PageLoader {
     // 当前章
     int mCurChapterPos;
     private int mCurPagePos;
-    private int readTextLength; //已读字符数
-    private boolean resetReadAloud; //是否重新朗读
-    private int readAloudParagraph; //正在朗读章节
-
     Bitmap cover;
     private int linePos = 0;
     private boolean isLastPage = false;
@@ -443,17 +438,6 @@ public abstract class PageLoader {
     }
 
     /**
-     * 翻到下一页,无动画
-     */
-    private void noAnimationToNextPage() {
-        if (getCurPagePos() < curChapter().txtChapter.getPageSize() - 1) {
-            skipToPage(getCurPagePos() + 1);
-            return;
-        }
-        skipNextChapter();
-    }
-
-    /**
      * 更新时间
      */
     public void updateTime() {
@@ -552,31 +536,6 @@ public abstract class PageLoader {
     }
 
     /**
-     * @return 本章未读内容
-     */
-    public String getUnReadContent() {
-        if (curChapter().txtChapter == null) return null;
-        if (book.isAudio()) return curChapter().txtChapter.getMsg();
-        if (curChapter().txtChapter.getTxtPageList().isEmpty()) return null;
-        StringBuilder s = new StringBuilder();
-        String content = getContent();
-        if (content != null) {
-            s.append(content);
-        }
-        content = getContentStartPage(mCurPagePos + 1);
-        if (content != null) {
-            s.append(content);
-        }
-        readTextLength = mCurPagePos > 0 ? curChapter().txtChapter.getPageLength(mCurPagePos - 1) : 0;
-        if (mPageMode == PageAnimation.Mode.SCROLL) {
-            for (int i = 0; i < Math.min(Math.max(0, linePos), curChapter().txtChapter.getPage(mCurPagePos).size() - 1); i++) {
-                readTextLength += curChapter().txtChapter.getPage(mCurPagePos).getLine(i).length();
-            }
-        }
-        return s.toString();
-    }
-
-    /**
      * * @return curPageLength 当前页字数
      */
     public int curPageLength() {
@@ -608,38 +567,6 @@ public abstract class PageLoader {
             }
         }
         return s.toString();
-    }
-
-    /**
-     * @param start 开始朗读字数
-     */
-    public void readAloudStart(int start) {
-        start = readTextLength + start;
-        int x = curChapter().txtChapter.getParagraphIndex(start);
-        if (readAloudParagraph != x) {
-            readAloudParagraph = x;
-            mPageView.drawPage(0);
-            mPageView.invalidate();
-            mPageView.drawPage(-1);
-            mPageView.drawPage(1);
-            mPageView.invalidate();
-        }
-    }
-
-    /**
-     * @param readAloudLength 已朗读字数
-     */
-    public void readAloudLength(int readAloudLength) {
-        if (curChapter().txtChapter == null) return;
-        if (curChapter().txtChapter.getStatus() != TxtChapter.Status.FINISH) return;
-        if (curChapter().txtChapter.getPageLength(mCurPagePos) < 0) return;
-        if (mPageView.isRunning()) return;
-        readAloudLength = readTextLength + readAloudLength;
-        if (readAloudLength >= curChapter().txtChapter.getPageLength(mCurPagePos)) {
-            resetReadAloud = false;
-            noAnimationToNextPage();
-            mPageView.invalidate();
-        }
     }
 
     /**
@@ -767,8 +694,7 @@ public abstract class PageLoader {
         mPageView.setContentDescription(getContent());
         book.setDurChapter(mCurChapterPos);
         book.setDurChapterPage(mCurPagePos);
-        callback.onPageChange(mCurChapterPos, getCurPagePos(), resetReadAloud);
-        resetReadAloud = true;
+        callback.onPageChange(mCurChapterPos, getCurPagePos());
     }
 
     /**
@@ -984,12 +910,10 @@ public abstract class PageLoader {
             //对标题进行绘制
             String str;
             int strLength = 0;
-            boolean isLight;
             for (int i = 0; i < txtPage.getTitleLines(); ++i) {
                 str = txtPage.getLine(i);
                 strLength = strLength + str.length();
-                isLight = ReadAloudService.running && readAloudParagraph == 0;
-                mTitlePaint.setColor(isLight ? ThemeStore.accentColor(mContext) : readBookControl.getTextColor());
+                mTitlePaint.setColor(readBookControl.getTextColor());
 
                 //进行绘制
                 canvas.drawText(str, mDisplayWidth / 2f, top, mTitlePaint);
@@ -1045,9 +969,7 @@ public abstract class PageLoader {
             for (int i = txtPage.getTitleLines(); i < txtPage.size(); ++i) {
                 str = txtPage.getLine(i);
                 strLength = strLength + str.length();
-                int paragraphLength = txtPage.getPosition() == 0 ? strLength : txtChapter.getPageLength(txtPage.getPosition() - 1) + strLength;
-                isLight = ReadAloudService.running && readAloudParagraph == txtChapter.getParagraphIndex(paragraphLength);
-                mTextPaint.setColor(isLight ? ThemeStore.accentColor(mContext) : readBookControl.getTextColor());
+                mTextPaint.setColor(readBookControl.getTextColor());
                 Layout tempLayout = new StaticLayout(str, mTextPaint, mVisibleWidth, Layout.Alignment.ALIGN_NORMAL, 0, 0, false);
                 float width = StaticLayout.getDesiredWidth(str, tempLayout.getLineStart(0), tempLayout.getLineEnd(0), mTextPaint);
                 if (needScale(str)) {
@@ -1174,7 +1096,6 @@ public abstract class PageLoader {
 
         int chapterPos = mCurChapterPos;
         int pagePos = mCurPagePos;
-        boolean isLight;
         int ppp = 0;//pzl,文字位置
 
         if (curChapter().txtChapter.getStatus() != TxtChapter.Status.FINISH) {
@@ -1210,8 +1131,7 @@ public abstract class PageLoader {
             if (top > totalHeight) break;
             float topi = top;
             int strLength = 0;
-            isLight = ReadAloudService.running && readAloudParagraph == 0;
-            mTitlePaint.setColor(isLight ? ThemeStore.accentColor(mContext) : readBookControl.getTextColor());
+            mTitlePaint.setColor(readBookControl.getTextColor());
             for (int i = 0; i < page.getTitleLines(); i++) {
                 if (top > totalHeight) {
                     break;
@@ -1272,9 +1192,7 @@ public abstract class PageLoader {
             for (int i = page.getTitleLines(); i < page.size(); i++) {
                 str = page.getLine(i);
                 strLength = strLength + str.length();
-                int paragraphLength = page.getPosition() == 0 ? strLength : chapter.getPageLength(page.getPosition() - 1) + strLength;
-                isLight = ReadAloudService.running && readAloudParagraph == chapter.getParagraphIndex(paragraphLength);
-                mTextPaint.setColor(isLight ? ThemeStore.accentColor(mContext) : readBookControl.getTextColor());
+                mTextPaint.setColor(readBookControl.getTextColor());
                 if (top > totalHeight) {
                     break;
                 } else if (top > startHeight) {
@@ -1726,7 +1644,6 @@ public abstract class PageLoader {
 
     private void chapterChangeCallback() {
         if (callback != null) {
-            readAloudParagraph = -1;
             callback.onChapterChange(mCurChapterPos);
             callback.onPageCountChange(curChapter().txtChapter != null ? curChapter().txtChapter.getPageSize() : 0);
         }
@@ -1837,11 +1754,10 @@ public abstract class PageLoader {
         /**
          * 作用：当页面改变的时候回调
          *
-         * @param chapterIndex   章节序号
-         * @param pageIndex      页数
-         * @param resetReadAloud 是否重置朗读
+         * @param chapterIndex 章节序号
+         * @param pageIndex    页数
          */
-        void onPageChange(int chapterIndex, int pageIndex, boolean resetReadAloud);
+        void onPageChange(int chapterIndex, int pageIndex);
 
         void vipPop();
     }

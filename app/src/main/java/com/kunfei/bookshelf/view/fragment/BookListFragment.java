@@ -95,11 +95,13 @@ public class BookListFragment extends MBaseFragment<BookListContract.Presenter> 
             bookShelfAdapter = new BookShelfGridAdapter(getActivity());
         }
         binding.rvBookshelf.setAdapter((RecyclerView.Adapter) bookShelfAdapter);
+        binding.rvBookshelf.setItemAnimator(null);     // 墨水屏：关掉列表增删动画
         binding.refreshLayout.setColorSchemeColors(ThemeStore.accentColor(MApplication.getInstance()));
     }
 
     @Override
     protected void firstRequest() {
+        android.util.Log.i("Boot", "BookListFragment.firstRequest 开始");
         group = preferences.getInt("bookshelfGroup", 0);
         boolean needRefresh = preferences.getBoolean(getString(R.string.pk_auto_refresh), false)
                 && !isRecreate && NetworkUtils.isNetWorkAvailable() && group != 2;
@@ -206,6 +208,7 @@ public class BookListFragment extends MBaseFragment<BookListContract.Presenter> 
 
     @Override
     public void refreshBookShelf(List<BookShelfBean> bookShelfBeanList) {
+        android.util.Log.i("Boot", "书架数据到位，开始渲染 " + (bookShelfBeanList == null ? 0 : bookShelfBeanList.size()) + " 本");
         bookShelfAdapter.replaceAll(bookShelfBeanList, bookPx);
         if (bookShelfBeanList.size() > 0) {
             binding.viewEmpty.rlEmptyView.setVisibility(View.GONE);

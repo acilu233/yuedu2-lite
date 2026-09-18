@@ -195,6 +195,12 @@ public class BookSource3Bean {
     }
 
     public BookSourceBean toBookSourceBean() {
+        // 3.0 书源里 ruleExplore 等可以缺省，缺省时按空规则处理（原来会直接 NPE）
+        if (ruleExplore == null) ruleExplore = new ExploreRule();
+        if (ruleSearch == null) ruleSearch = new SearchRule();
+        if (ruleBookInfo == null) ruleBookInfo = new BookInfoRule();
+        if (ruleToc == null) ruleToc = new TocRule();
+        if (ruleContent == null) ruleContent = new ContentRule();
         // 带注释的行，表示2.0/3.0书源json的数据命名不同。注释后方为2.0名称
         String bookSourceType = "";
         if (this.bookSourceType != 0)

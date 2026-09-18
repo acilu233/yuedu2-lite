@@ -15,7 +15,6 @@ import com.kunfei.bookshelf.R;
 import com.kunfei.bookshelf.utils.ReadAssets;
 import com.kunfei.bookshelf.widget.RotateLoading;
 
-import ru.noties.markwon.Markwon;
 
 /**
  * 对话框
@@ -106,7 +105,8 @@ public class MoDialogView extends LinearLayout {
         removeAllViews();
         LayoutInflater.from(getContext()).inflate(R.layout.mo_dialog_markdown, this, true);
         TextView tvMarkdown = findViewById(R.id.tv_markdown);
-        Markwon.create(tvMarkdown.getContext()).setMarkdown(tvMarkdown, ReadAssets.getText(context, assetFileName));
+        // 墨水屏精简：去掉 markwon 依赖，直接显示原文
+        tvMarkdown.setText(ReadAssets.getText(context, assetFileName));
     }
 
     /**

@@ -107,6 +107,8 @@ public class BaseModelImpl {
                     .followSslRedirects(true)
                     .connectionSpecs(specs)
                     .protocols(Collections.singletonList(Protocol.HTTP_1_1))
+                    // 番茄内置源的"代码后端"：命中保留域名 fanqie.local 就地应答，不出网
+                    .addInterceptor(new com.kunfei.bookshelf.fanqie.FanqieInterceptor())
                     .addInterceptor(getHeaderInterceptor())
                     .build();
         }

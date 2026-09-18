@@ -171,7 +171,8 @@ public abstract class BaseActivity<T extends IPresenter> extends AppCompatActivi
 
     protected void startActivityByAnim(Intent intent, int animIn, int animExit) {
         startActivity(intent);
-        overridePendingTransition(animIn, animExit);
+        // 墨水屏：一律不做 Activity 切换动画
+        overridePendingTransition(0, 0);
     }
 
     protected void startActivityByAnim(Intent intent, @NonNull View view, @NonNull String transitionName, int animIn, int animExit) {

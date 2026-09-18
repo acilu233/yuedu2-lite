@@ -67,12 +67,6 @@
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/action_import_book_source_rwm"
-        android:icon="@drawable/ic_import"
-        android:title="@string/import_by_qr_code"
-        app:showAsAction="never" />
-
-    <item
         android:id="@+id/action_import_book_source_default"
         android:icon="@drawable/ic_import"
         android:title="@string/import_by_default"
@@ -99,12 +93,6 @@
         android:id="@+id/action_check_find_source"
         android:icon="@drawable/ic_baseline_label"
         android:title="@string/check_find_source"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_share_wifi"
-        android:icon="@drawable/ic_share"
-        android:title="@string/wifi_share"
         app:showAsAction="never" />
 
 </menu>

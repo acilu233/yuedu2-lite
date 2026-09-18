@@ -338,28 +338,6 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/ll_read_aloud_key"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/background_menu"
-                    android:orientation="vertical">
-
-                    <com.kunfei.bookshelf.widget.views.ATESwitch
-                        android:id="@+id/sw_read_aloud_key"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="15dp"
-                        android:textColor="@color/menu_color_default"
-                        android:text="@string/aloud_volume_page" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="0.8dp"
-                        android:background="@color/btn_bg_press" />
-
-                </LinearLayout>
-
-                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@color/background_menu"

@@ -1,6 +1,5 @@
 package com.kunfei.bookshelf.model.task;
 
-import static com.kunfei.bookshelf.constant.AppConstant.SCRIPT_ENGINE;
 
 import android.text.TextUtils;
 
@@ -143,7 +142,7 @@ public class CheckSourceTask {
         SimpleBindings bindings = new SimpleBindings();
         bindings.put("java", new AnalyzeRule(null, bookSourceBean));
         bindings.put("baseUrl", baseUrl);
-        return SCRIPT_ENGINE.eval(jsStr, bindings);
+        return com.kunfei.bookshelf.constant.AppConstant.getScriptEngine().eval(jsStr, bindings);
     }
 
 }

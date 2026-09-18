@@ -44,6 +44,9 @@ public class PageView extends View implements PageAnimation.OnPageChangeListener
     private int mViewWidth = 0; // 当前View的宽
     private int mViewHeight = 0; // 当前View的高
     private int statusBarHeight = 0; //状态栏高度
+    // 读过的最大高度：系统栏显隐会把窗口内容区挤矮，这里固定为最大高度，
+    // 避免尺寸变化触发 PageLoader.prepareDisplay 重新排版（正文会闪一下）
+    private int mStableHeight = 0;
 
     private boolean actionFromEdge = false;
     // 初始化参数
@@ -120,6 +123,24 @@ public class PageView extends View implements PageAnimation.OnPageChangeListener
                 mTouchListener.onLongPress();//响应长按事件，供上层调用
             }
         };
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int heightMode = View.MeasureSpec.getMode(heightMeasureSpec);
+        int heightSize = View.MeasureSpec.getSize(heightMeasureSpec);
+        if (heightMode == View.MeasureSpec.EXACTLY) {
+            if (heightSize > mStableHeight) {
+                mStableHeight = heightSize;
+            } else if (mStableHeight > heightSize
+                    && readBookControl.getHideStatusBar()
+                    && readBookControl.getHideNavigationBar()) {
+                // 沉浸全屏阅读时窗口只会被系统栏“挤矮”，保持满屏高度即可让阅读页彻底固定，
+                // 不重新排版也不闪烁；多出来的部分被系统栏区域覆盖，与全屏状态一致。
+                heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(mStableHeight, View.MeasureSpec.EXACTLY);
+            }
+        }
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     @Override

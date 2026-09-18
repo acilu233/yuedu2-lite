@@ -21,6 +21,7 @@
             android:id="@+id/iv_cover"
             android:layout_width="70dp"
             android:layout_height="100dp"
+            android:visibility="gone"
             android:contentDescription="@string/book"
             android:scaleType="centerCrop"
             android:src="@drawable/image_cover_default" />

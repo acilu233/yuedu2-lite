@@ -86,11 +86,6 @@ class MoreSettingPop : FrameLayout {
                 upView()
             }
         }
-        binding.swReadAloudKey.setOnCheckedChangeListener { compoundButton: CompoundButton, b: Boolean ->
-            if (compoundButton.isPressed) {
-                readBookControl.aloudCanKeyTurn = b
-            }
-        }
         binding.sbClick.setOnCheckedChangeListener { buttonView: CompoundButton, isChecked: Boolean ->
             if (buttonView.isPressed) {
                 readBookControl.canClickTurn = isChecked
@@ -192,7 +187,6 @@ class MoreSettingPop : FrameLayout {
         upNavBarColor(readBookControl.navBarColor)
         binding.sbImmersionStatusBar.isChecked = readBookControl.immersionStatusBar
         binding.swVolumeNextPage.isChecked = readBookControl.canKeyTurn
-        binding.swReadAloudKey.isChecked = readBookControl.aloudCanKeyTurn
         binding.sbLightNovelParagraph.isChecked = readBookControl.lightNovelParagraph;
         binding.sbHideStatusBar.isChecked = readBookControl.hideStatusBar
         binding.sbToLh.isChecked = readBookControl.toLh
@@ -214,7 +208,6 @@ class MoreSettingPop : FrameLayout {
             binding.sbShowTimeBattery.isEnabled = false
             binding.sbToLh.isEnabled = false
         }
-        binding.swReadAloudKey.isEnabled = readBookControl.canKeyTurn
         binding.sbClickAllNext.isEnabled = readBookControl.canClickTurn
         if (readBookControl.hideNavigationBar) {
             binding.llNavigationBarColor.isEnabled = false

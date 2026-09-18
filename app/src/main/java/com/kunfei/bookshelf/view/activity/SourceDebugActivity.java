@@ -151,17 +151,10 @@ public class SourceDebugActivity extends MBaseActivity<IPresenter> {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_scan) {
-            scan();
-        } else if (id == android.R.id.home) {
+        if (id == android.R.id.home) {
             finish();
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private void scan() {
-        Intent intent = new Intent(this, QRCodeScanActivity.class);
-        startActivityForResult(intent, REQUEST_QR);
     }
 
     @Override

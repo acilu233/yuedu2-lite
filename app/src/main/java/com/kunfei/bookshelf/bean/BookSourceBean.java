@@ -2,7 +2,6 @@ package com.kunfei.bookshelf.bean;
 
 import static android.text.TextUtils.isEmpty;
 import static com.kunfei.bookshelf.constant.AppConstant.MAP_STRING;
-import static com.kunfei.bookshelf.constant.AppConstant.SCRIPT_ENGINE;
 
 import android.text.TextUtils;
 import android.util.Pair;
@@ -761,7 +760,7 @@ public class BookSourceBean implements Cloneable, JsExtensions {
             bindings.put("java", this);
             bindings.put("source", this);
             bindings.put("baseUrl", bookSourceUrl);
-            return SCRIPT_ENGINE.eval(jsStr, bindings);
+            return com.kunfei.bookshelf.constant.AppConstant.getScriptEngine().eval(jsStr, bindings);
         } catch (Exception e) {
             e.printStackTrace();
             return e.getLocalizedMessage();

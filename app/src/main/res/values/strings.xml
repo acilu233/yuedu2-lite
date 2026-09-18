@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">阅读</string>
+    <string name="app_name">阅读 Lite</string>
     <string name="bookshelf">书架</string>
     <string name="last_read">最后阅读</string>
     <string name="read_summary">让阅读成为一种习惯。</string>
@@ -51,7 +51,8 @@
     <string name="download_offline_t">离线下载</string>
     <string name="download_offline_s">下载选择的章节到本地</string>
     <string name="change_origin">换源</string>
-    <string name="about_description">\u3000\u3000这是一款开源的阅读软件，你可以fork我们的代码自己编译APK。欢迎提交代码帮助改善应用。\n\u3000\u3000公众号[开源阅读]！</string>
+    <string name="about_description">\u3000\u3000阅读 Lite 是基于「阅读 2.0」（MyBookshelf）精简改造的阅读器，为老旧设备而生：安装包约 10MB，无广告、无付费门槛，Android 4.4 的低配机器也能顺畅看书。\n\u3000\u3000支持 3.0 格式书源（JSON 可直接导入），并内置番茄书源；墨水屏优先：只保留黑白两套配色、界面无动画、翻页无动画，阅读时全屏，调出菜单不会挤动正文。</string>
+    <string name="usage_guide">使用说明</string>
     <string name="version_name">Version %s</string>
     <string name="pt_auto_refresh">自动刷新</string>
     <string name="ps_auto_refresh">打开软件时自动更新书籍</string>
@@ -88,22 +89,12 @@
     <string name="ps_hide_status_bar">阅读界面隐藏状态栏</string>
     <string name="pt_read_line_adjust">阅读行数调整</string>
     <string name="ps_read_line_adjust">阅读行数减一行,如阅读界面显示不全可启用</string>
-    <string name="read_aloud">朗读</string>
-    <string name="read_aloud_t">正在朗读</string>
-    <string name="read_aloud_s">点击打开阅读界面</string>
     <string name="text_return">返回</string>
     <string name="refresh">重新加载</string>
     <string name="start">开始</string>
     <string name="stop">停止</string>
     <string name="pause">暂停</string>
     <string name="resume">继续</string>
-    <string name="set_timer">定时</string>
-    <string name="read_aloud_pause">朗读暂停</string>
-    <string name="read_aloud_timer">正在朗读(还剩%d分钟)</string>
-    <string name="read_aloud_timerlong">"正在朗读(还剩%d小时%d分)"</string>
-    <string name="read_aloud_timerremaining">%d分钟</string>
-    <string name="read_aloud_timerremaininglong">"%d小时%d分"</string>
-    <string name="read_aloud_timerstop">"计时已取消"</string>
     <string name="ps_hide_navigation_bar">阅读界面隐藏虚拟按键</string>
     <string name="pt_hide_navigation_bar">隐藏导航栏</string>
     <string name="re_navigation_bar_color">导航栏颜色</string>
@@ -118,7 +109,6 @@
     <string name="background">背景</string>
     <string name="author">作者</string>
     <string name="analyze_error">站点暂时不支持解析，请反馈</string>
-    <string name="aloud_stop">朗读停止</string>
     <string name="clear_cache">清除缓存</string>
     <string name="action_save">保存</string>
     <string name="edit_book_source">编辑书源</string>
@@ -214,7 +204,6 @@
     <string name="bookmark_add">添加书签</string>
     <string name="action_del">删除</string>
     <string name="load_over_time">加载超时</string>
-    <string name="join_group">关注:%s</string>
     <string name="copy_complete">已拷贝</string>
     <string name="arrange_bookshelf">整理书架</string>
     <string name="clear_bookshelf_s">这将会删除所有书籍，请谨慎操作。</string>
@@ -237,8 +226,6 @@
     <string name="check_book_source">校验书源</string>
     <string name="check_select_source">校验所选</string>
     <string name="progress_show">进度 %d/%d</string>
-    <string name="tts_fix">请安装并选择中文TTS!</string>
-    <string name="tts_init_failed">TTS初始化失败!</string>
     <string name="jf_convert">简繁转换</string>
     <string name="jf_convert_o">关闭</string>
     <string name="jf_convert_f">简转繁</string>
@@ -261,7 +248,6 @@
     <string name="auto_expand_find">自动展开发现</string>
     <string name="default_expand_first">默认展开第一组发现</string>
     <string name="threads_num">当前线程数 %s</string>
-    <string name="read_aloud_speed">朗读语速</string>
     <string name="auto_next_page">自动翻页</string>
     <string name="auto_next_page_stop">停止自动翻页</string>
     <string name="auto_next_page_speed">自动翻页时每分钟阅读字数(CPM)</string>
@@ -275,7 +261,6 @@
     <string name="sys_file_picker">系统文件选择器</string>
     <string name="new_version">新版本</string>
     <string name="download_update">下载更新</string>
-    <string name="aloud_volume_page">朗读时音量键翻页</string>
     <string name="tip_margin_change">Tip边距跟随边距调整</string>
     <string name="disable_update">禁止更新</string>
     <string name="allow_update">允许更新</string>
@@ -315,7 +300,6 @@
     <string name="page_mode_SLIDE">滑动</string>
     <string name="page_mode_SCROLL">滚动</string>
     <string name="page_mode_NONE">无动画</string>
-    <string name="donate_s">此书源使用了高级功能，复制支付宝红包搜索码领取红包或关注微信公众号[开源阅读]开启。</string>
     <string name="up_change_source_last_chapter_t">后台更新换源最新章节</string>
     <string name="up_change_source_last_chapter_s">开启则会在软件打开1分钟后开始更新</string>
     <string name="behavior_main_t">书架ToolBar自动隐藏</string>
@@ -393,7 +377,6 @@
     <string name="sure_del_all_book">是否删除全部书籍？</string>
     <string name="sure_del_download_book">是否同时删除已下载的书籍目录？</string>
     <string name="qr_per">扫描二维码需相机权限</string>
-    <string name="aloud_can_not_auto_page">朗读正在运行,不能自动翻页</string>
     <string name="input_charset">输入编码</string>
     <string name="text_chapter_list_rule">TXT目录规则</string>
     <string name="open_local_book_per">打开外部书籍需获取存储权限</string>
@@ -406,7 +389,6 @@
     <string name="get_book_list_success">搜索列表获取成功%d</string>
     <string name="non_null_source_name_url">书源名称和URL不能为空</string>
     <string name="gallery">图库</string>
-    <string name="get_ali_pay_hb">领支付宝红包</string>
     <string name="non_update_url">没有获取到更新地址</string>
     <string name="check_host_cookie">正在打开首页，成功自动返回主界面</string>
     <string name="click_check_after_success">登录成功后请点击右上角图标进行首页访问测试</string>
@@ -489,4 +471,7 @@
     <string name="rule_vip">VIP标识(ruleVip)</string>
     <string name="rule_pay">购买标识(rulePay)</string>
     <string name="chapter_pay">购买</string>
+    <string name="fanqie_direct">番茄直达</string>
+    <string name="fanqie_direct_hint">粘贴番茄分享链接/文案/书号</string>
+    <string name="fanqie_direct_placeholder">番茄小说</string>
 </resources>

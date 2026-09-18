@@ -59,9 +59,10 @@ public class FileHelp {
     public static String getFilesPath() {
         if (isSdCardExist()) {
             try {
-                return MApplication.getInstance()
-                        .getExternalFilesDir(null)
-                        .getAbsolutePath();
+                long t0 = System.currentTimeMillis();
+                java.io.File dir = MApplication.getInstance().getExternalFilesDir(null);
+                android.util.Log.i("Boot", "    getExternalFilesDir 耗时=" + (System.currentTimeMillis() - t0) + "ms -> " + dir);
+                return dir.getAbsolutePath();
             } catch (Exception ignored) {
             }
         }
@@ -74,9 +75,10 @@ public class FileHelp {
     public static String getCachePath() {
         if (isSdCardExist()) {
             try {
-                return MApplication.getInstance()
-                        .getExternalCacheDir()
-                        .getAbsolutePath();
+                long t0 = System.currentTimeMillis();
+                java.io.File dir = MApplication.getInstance().getExternalCacheDir();
+                android.util.Log.i("Boot", "    getExternalCacheDir 耗时=" + (System.currentTimeMillis() - t0) + "ms -> " + dir);
+                return dir.getAbsolutePath();
             } catch (Exception ignored) {
             }
         }

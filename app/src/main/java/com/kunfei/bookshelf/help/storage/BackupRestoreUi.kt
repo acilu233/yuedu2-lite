@@ -15,8 +15,6 @@ import com.kunfei.bookshelf.base.observer.MySingleObserver
 import com.kunfei.bookshelf.constant.RxBusTag
 import com.kunfei.bookshelf.help.permission.Permissions
 import com.kunfei.bookshelf.help.permission.PermissionsCompat
-import com.kunfei.bookshelf.help.storage.WebDavHelp.getWebDavFileNames
-import com.kunfei.bookshelf.help.storage.WebDavHelp.showRestoreDialog
 import com.kunfei.bookshelf.widget.filepicker.picker.FilePicker
 import io.reactivex.Single
 import io.reactivex.SingleEmitter
@@ -151,32 +149,23 @@ object BackupRestoreUi : Backup.CallBack, Restore.CallBack {
     }
 
     fun restore(activity: Activity) {
-        Single.create { emitter: SingleEmitter<ArrayList<String>?> ->
-            emitter.onSuccess(getWebDavFileNames())
-        }.subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(object : MySingleObserver<ArrayList<String>?>() {
-                override fun onSuccess(strings: ArrayList<String>) {
-                    if (!showRestoreDialog(activity, strings, this@BackupRestoreUi)) {
-                        val path = getBackupPath()
-                        if (TextUtils.isEmpty(path)) {
-                            selectRestoreFolder(activity)
-                        } else if (path.isContentPath()) {
-                            val uri = Uri.parse(path)
-                            val doc = DocumentFile.fromTreeUri(activity, uri)
-                            if (doc?.canWrite() == true) {
-                                Restore.restore(activity, Uri.parse(path), this@BackupRestoreUi)
-                            } else {
-                                selectRestoreFolder(activity)
-                            }
-                        } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) {
-                            selectRestoreFolder(activity)
-                        } else {
-                            restoreUsePermission(activity)
-                        }
-                    }
-                }
-            })
+        // WebDAV 已移除：直接从本地/用户选择的目录恢复
+        val path = getBackupPath()
+        if (TextUtils.isEmpty(path)) {
+            selectRestoreFolder(activity)
+        } else if (path.isContentPath()) {
+            val uri = Uri.parse(path)
+            val doc = DocumentFile.fromTreeUri(activity, uri)
+            if (doc?.canWrite() == true) {
+                Restore.restore(activity, Uri.parse(path), this@BackupRestoreUi)
+            } else {
+                selectRestoreFolder(activity)
+            }
+        } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) {
+            selectRestoreFolder(activity)
+        } else {
+            restoreUsePermission(activity)
+        }
     }
 
     private fun restoreUsePermission(activity: Activity, path: String = Backup.defaultPath) {

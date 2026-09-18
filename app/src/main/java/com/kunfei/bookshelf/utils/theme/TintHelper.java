@@ -91,7 +91,10 @@ public final class TintHelper {
 
             final FloatingActionButton fab = (FloatingActionButton) view;
             fab.setRippleColor(rippleColor);
-            fab.setBackgroundTintList(sl);
+            // 4.4(API19)：View.setBackgroundTintList 是 API21+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                fab.setBackgroundTintList(sl);
+            }
             if (fab.getDrawable() != null)
                 fab.setImageDrawable(createTintedDrawable(fab.getDrawable(), textColor));
             return;

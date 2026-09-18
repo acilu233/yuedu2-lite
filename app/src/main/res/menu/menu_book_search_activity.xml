@@ -8,6 +8,12 @@
         android:title="@string/book_source_manage"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/action_fanqie_direct"
+        android:title="@string/fanqie_direct"
+        android:checkable="true"
+        app:showAsAction="never" />
+
     <group android:id="@+id/source_group">
 
     </group>

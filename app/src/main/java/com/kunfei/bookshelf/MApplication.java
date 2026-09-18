@@ -33,8 +33,6 @@ import timber.log.Timber;
 
 public class MApplication extends Application {
     public final static String channelIdDownload = "channel_download";
-    public final static String channelIdReadAloud = "channel_read_aloud";
-    public final static String channelIdWeb = "channel_web";
     public static String downloadPath;
     public static boolean isEInkMode;
     public static String SEARCH_GROUP = null;
@@ -42,7 +40,6 @@ public class MApplication extends Application {
     private static String versionName;
     private static int versionCode;
     private SharedPreferences configPreferences;
-    private boolean donateHb;
 
     public static MApplication getInstance() {
         return instance;
@@ -63,8 +60,13 @@ public class MApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        long bootT0 = System.currentTimeMillis();
+        android.util.Log.i("Boot", "MApplication.onCreate 开始");
         instance = this;
+        long tMark = bootT0;
         CrashHandler.getInstance().init(this);
+        android.util.Log.i("Boot", "  CrashHandler.init = " + (System.currentTimeMillis() - tMark) + "ms");
+        tMark = System.currentTimeMillis();
         Timber.plant(new Timber.DebugTree());
         RxJavaPlugins.setErrorHandler(Functions.emptyConsumer());
         try {
@@ -77,19 +79,31 @@ public class MApplication extends Application {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createChannelId();
         }
+        android.util.Log.i("Boot", "  版本号读取 = " + (System.currentTimeMillis() - tMark) + "ms");
+        tMark = System.currentTimeMillis();
         configPreferences = getSharedPreferences("CONFIG", 0);
+        android.util.Log.i("Boot", "    getSharedPreferences = " + (System.currentTimeMillis() - tMark) + "ms");
+        long tPref = System.currentTimeMillis();
         downloadPath = configPreferences.getString(getString(R.string.pk_download_path), "");
+        android.util.Log.i("Boot", "    prefs.getString = " + (System.currentTimeMillis() - tPref) + "ms");
         if (TextUtils.isEmpty(downloadPath) | Objects.equals(downloadPath, FileHelp.getCachePath())) {
+            long tSet = System.currentTimeMillis();
             setDownloadPath(null);
+            android.util.Log.i("Boot", "    setDownloadPath = " + (System.currentTimeMillis() - tSet) + "ms");
         }
+        android.util.Log.i("Boot", "  下载路径初始化 = " + (System.currentTimeMillis() - tMark) + "ms");
+        tMark = System.currentTimeMillis();
         initNightTheme();
-        if (!ThemeStore.isConfigured(this, versionCode)) {
+        // 墨水屏：始终强制黑白主题（老版本存过自定义颜色的，这里会被纠正回来）
+        int wantPrimary = isNightTheme() ? android.graphics.Color.BLACK : android.graphics.Color.WHITE;
+        if (!ThemeStore.isConfigured(this, versionCode) || ThemeStore.primaryColor(this) != wantPrimary) {
             upThemeStore();
         }
+        android.util.Log.i("Boot", "  主题初始化 = " + (System.currentTimeMillis() - tMark) + "ms");
+        tMark = System.currentTimeMillis();
         AppFrontBackHelper.getInstance().register(this, new AppFrontBackHelper.OnAppStatusListener() {
             @Override
             public void onFront() {
-                donateHb = System.currentTimeMillis() - configPreferences.getLong("DonateHb", 0) <= TimeUnit.DAYS.toMillis(30);
             }
 
             @Override
@@ -97,7 +111,14 @@ public class MApplication extends Application {
                 UpLastChapterModel.destroy();
             }
         });
+        android.util.Log.i("Boot", "  前后台监听注册 = " + (System.currentTimeMillis() - tMark) + "ms");
+        tMark = System.currentTimeMillis();
         upEInkMode();
+        android.util.Log.i("Boot", "  墨水屏模式 = " + (System.currentTimeMillis() - tMark) + "ms");
+        // 内置番茄源：幂等注册（已存在就不动）。放到后台线程，避免启动时在主线程做数据库读写
+        new Thread(() -> com.kunfei.bookshelf.fanqie.FanqieBookSource.INSTANCE.ensureInserted(),
+                "fanqie-source-init").start();
+        android.util.Log.i("Boot", "MApplication.onCreate 结束 用时=" + (System.currentTimeMillis() - bootT0) + "ms");
     }
 
     @Override
@@ -118,17 +139,18 @@ public class MApplication extends Application {
      * 初始化主题
      */
     public void upThemeStore() {
+        // 墨水屏：主题只保留黑白两色，白天/夜间各一套（不再允许自定义颜色）
         if (isNightTheme()) {
             ThemeStore.editTheme(this)
-                    .primaryColor(configPreferences.getInt("colorPrimaryNight", getResources().getColor(R.color.md_grey_800)))
-                    .accentColor(configPreferences.getInt("colorAccentNight", getResources().getColor(R.color.md_pink_800)))
-                    .backgroundColor(configPreferences.getInt("colorBackgroundNight", getResources().getColor(R.color.md_grey_800)))
+                    .primaryColor(android.graphics.Color.BLACK)
+                    .accentColor(android.graphics.Color.WHITE)
+                    .backgroundColor(android.graphics.Color.BLACK)
                     .apply();
         } else {
             ThemeStore.editTheme(this)
-                    .primaryColor(configPreferences.getInt("colorPrimary", getResources().getColor(R.color.md_grey_100)))
-                    .accentColor(configPreferences.getInt("colorAccent", getResources().getColor(R.color.md_pink_600)))
-                    .backgroundColor(configPreferences.getInt("colorBackground", getResources().getColor(R.color.md_grey_100)))
+                    .primaryColor(android.graphics.Color.WHITE)
+                    .accentColor(android.graphics.Color.BLACK)
+                    .backgroundColor(android.graphics.Color.WHITE)
                     .apply();
         }
     }
@@ -156,17 +178,6 @@ public class MApplication extends Application {
         return getInstance().configPreferences;
     }
 
-    public boolean getDonateHb() {
-        return donateHb || BuildConfig.DEBUG;
-    }
-
-    public void upDonateHb() {
-        configPreferences.edit()
-                .putLong("DonateHb", System.currentTimeMillis())
-                .apply();
-        donateHb = true;
-    }
-
     public void upEInkMode() {
         MApplication.isEInkMode = configPreferences.getBoolean("E-InkMode", false);
     }
@@ -186,27 +197,9 @@ public class MApplication extends Application {
         downloadChannel.enableVibration(false);
         downloadChannel.setSound(null, null);
 
-        //用唯一的ID创建渠道对象
-        NotificationChannel readAloudChannel = new NotificationChannel(channelIdReadAloud,
-                getString(R.string.read_aloud),
-                NotificationManager.IMPORTANCE_LOW);
-        //初始化channel
-        readAloudChannel.enableLights(false);
-        readAloudChannel.enableVibration(false);
-        readAloudChannel.setSound(null, null);
-
-        //用唯一的ID创建渠道对象
-        NotificationChannel webChannel = new NotificationChannel(channelIdWeb,
-                getString(R.string.web_service),
-                NotificationManager.IMPORTANCE_LOW);
-        //初始化channel
-        webChannel.enableLights(false);
-        webChannel.enableVibration(false);
-        webChannel.setSound(null, null);
-
         //向notification manager 提交channel
         if (notificationManager != null) {
-            notificationManager.createNotificationChannels(Arrays.asList(downloadChannel, readAloudChannel, webChannel));
+            notificationManager.createNotificationChannel(downloadChannel);
         }
     }
 

@@ -27,6 +27,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
@@ -49,7 +50,6 @@ import com.kunfei.bookshelf.model.UpLastChapterModel;
 import com.kunfei.bookshelf.presenter.BookSourcePresenter;
 import com.kunfei.bookshelf.presenter.MainPresenter;
 import com.kunfei.bookshelf.presenter.contract.MainContract;
-import com.kunfei.bookshelf.service.WebService;
 import com.kunfei.bookshelf.utils.ACache;
 import com.kunfei.bookshelf.utils.StringUtils;
 import com.kunfei.bookshelf.utils.theme.NavigationViewUtil;
@@ -102,9 +102,11 @@ public class MainActivity extends BaseTabActivity<MainContract.Presenter> implem
 
     @Override
     protected void onCreateActivity() {
+        android.util.Log.i("Boot", "MainActivity.onCreateActivity 开始");
         getWindow().getDecorView().setBackgroundColor(ThemeStore.backgroundColor(this));
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        android.util.Log.i("Boot", "MainActivity.onCreateActivity 结束(布局已 inflate)");
     }
 
     @Override
@@ -428,10 +430,6 @@ public class MainActivity extends BaseTabActivity<MainContract.Presenter> implem
 
                         }
                     }).show();
-        } else if (id == R.id.action_add_qrcode) {
-            Intent intent = new Intent(this, QRCodeScanActivity.class);
-            //noinspection deprecation
-            startActivityForResult(intent, REQUEST_QR);
         } else if (id == R.id.action_download_all) {
             if (!isNetWorkAvailable()) {
                 toast(R.string.network_connection_unavailable);
@@ -444,16 +442,11 @@ public class MainActivity extends BaseTabActivity<MainContract.Presenter> implem
             if (getBookListFragment() != null) {
                 getBookListFragment().setArrange(true);
             }
-        } else if (id == R.id.action_web_start) {
-            boolean startedThisTime = WebService.startThis(this);
-            if (!startedThisTime) {
-                toast(getString(R.string.web_service_already_started_hint));
-            }
         } else if (id == android.R.id.home) {
             if (binding.drawer.isDrawerOpen(GravityCompat.START)) {
-                binding.drawer.closeDrawers();
+                binding.drawer.closeDrawer(GravityCompat.START, false);
             } else {
-                binding.drawer.openDrawer(GravityCompat.START, !MApplication.isEInkMode);
+                binding.drawer.openDrawer(GravityCompat.START, false);
             }
         }
         return super.onOptionsItemSelected(item);
@@ -472,6 +465,28 @@ public class MainActivity extends BaseTabActivity<MainContract.Presenter> implem
         mDrawerToggle = new ActionBarDrawerToggle(this, binding.drawer, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         mDrawerToggle.syncState();
         binding.drawer.addDrawerListener(mDrawerToggle);
+        // 墨水屏：ActionBarDrawerToggle 默认的点击处理走的是带动画的 toggle()，
+        // 这里覆盖掉，改成无动画开关抽屉（否则"滑回"那一下动画删不掉）
+        mDrawerToggle.setToolbarNavigationClickListener(v -> {
+            if (binding.drawer.isDrawerOpen(GravityCompat.START)) {
+                binding.drawer.closeDrawer(GravityCompat.START, false);
+            } else {
+                binding.drawer.openDrawer(GravityCompat.START, false);
+            }
+        });
+        // 墨水屏：禁用边缘滑动手势（滑动动画在墨水屏上很难看），只用按钮开关抽屉
+        binding.drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+        // 抽屉打开时，点"抽屉外面"关掉它：走我们自己的无动画关闭
+        // （手势被锁死后 DrawerLayout 自己不再处理遮罩点击，同时也避免它用带动画的 closeDrawers(true)）
+        binding.mainView.getRoot().setOnTouchListener((v, event) -> {
+            if (binding.drawer.isDrawerOpen(GravityCompat.START)) {
+                if (event.getActionMasked() == MotionEvent.ACTION_UP) {
+                    binding.drawer.closeDrawer(GravityCompat.START, false);
+                }
+                return true;
+            }
+            return false;
+        });
 
         setUpNavigationView();
     }
@@ -513,7 +528,7 @@ public class MainActivity extends BaseTabActivity<MainContract.Presenter> implem
         upThemeVw();
         vwNightTheme.setOnClickListener(view -> setNightTheme(!isNightTheme()));
         binding.navigationView.setNavigationItemSelectedListener(menuItem -> {
-            binding.drawer.closeDrawer(GravityCompat.START, !MApplication.isEInkMode);
+            binding.drawer.closeDrawer(GravityCompat.START, false);
             int itemId = menuItem.getItemId();
             if (itemId == R.id.action_book_source_manage) {
                 handler.postDelayed(() -> BookSourceActivity.startThis(this, requestSource), 200);
@@ -525,8 +540,6 @@ public class MainActivity extends BaseTabActivity<MainContract.Presenter> implem
                 handler.postDelayed(() -> SettingActivity.startThis(this), 200);
             } else if (itemId == R.id.action_about) {
                 handler.postDelayed(() -> AboutActivity.startThis(this), 200);
-            } else if (itemId == R.id.action_donate) {
-                handler.postDelayed(() -> DonateActivity.startThis(this), 200);
             } else if (itemId == R.id.action_backup) {
                 handler.postDelayed(() -> BackupRestoreUi.INSTANCE.backup(this), 200);
             } else if (itemId == R.id.action_restore) {
@@ -615,7 +628,7 @@ public class MainActivity extends BaseTabActivity<MainContract.Presenter> implem
         } else {
             if (keyCode == KeyEvent.KEYCODE_BACK) {
                 if (binding.drawer.isDrawerOpen(GravityCompat.START)) {
-                    binding.drawer.closeDrawer(GravityCompat.START, !MApplication.isEInkMode);
+                    binding.drawer.closeDrawer(GravityCompat.START, false);
                     return true;
                 }
                 exit();

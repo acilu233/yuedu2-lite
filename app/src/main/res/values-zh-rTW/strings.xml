@@ -48,7 +48,7 @@
     <string name="download_offline_t">離線下載</string>
     <string name="download_offline_s">下載選擇的章節到本地</string>
     <string name="change_origin">換源</string>
-    <string name="about_description">\u3000\u3000這是一款開源的閱讀應用，你可以fork我們的代碼自己編譯APK。</string>
+    <string name="about_description">\u3000\u3000閱讀 Lite 是基於「閱讀 2.0」（MyBookshelf）精簡改造的閱讀器，為老舊設備而生：安裝包約 10MB，無廣告、無付費門檻，Android 4.4 的低配機器也能順暢看書。\n\u3000\u3000支持 3.0 格式書源（JSON 可直接導入），並內建番茄書源；墨水屏優先：只保留黑白兩套配色、介面無動畫、翻頁無動畫，閱讀時全螢幕，調出選單不會擠動正文。</string>
     <string name="version_name">Version %s</string>
     <string name="pt_auto_refresh">自動刷新</string>
     <string name="ps_auto_refresh">打開應用時自動更新書籍</string>
@@ -85,22 +85,12 @@
     <string name="ps_hide_status_bar">閱讀畫面隱藏狀態欄</string>
     <string name="pt_read_line_adjust">閱讀行數調整</string>
     <string name="ps_read_line_adjust">閱讀行數減一行,如閱讀畫面顯示不全可啟用</string>
-    <string name="read_aloud">朗讀</string>
-    <string name="read_aloud_t">正在朗讀</string>
-    <string name="read_aloud_s">點擊打開閱讀畫面</string>
     <string name="text_return">返回</string>
     <string name="refresh">重新加載</string>
     <string name="start">開始</string>
     <string name="stop">停止</string>
     <string name="pause">暫停</string>
     <string name="resume">繼續</string>
-    <string name="set_timer">定時</string>
-    <string name="read_aloud_pause">朗讀暫停</string>
-    <string name="read_aloud_timer">正在朗讀(還剩%d分鐘)</string>
-    <string name="read_aloud_timerlong">"正在朗讀(還剩%d小時%d分)"</string>
-    <string name="read_aloud_timerremaining">%d分鐘</string>
-    <string name="read_aloud_timerremaininglong">"%d小時%d分"</string>
-    <string name="read_aloud_timerstop">"計時已取消"</string>
     <string name="ps_hide_navigation_bar">閱讀畫面隱藏虛擬按鍵</string>
     <string name="pt_hide_navigation_bar">隱藏導航欄</string>
     <string name="re_navigation_bar_color">導航欄顏色</string>
@@ -115,7 +105,6 @@
     <string name="background">背景</string>
     <string name="author">作者</string>
     <string name="analyze_error">站點暫時不支持解析，請反饋</string>
-    <string name="aloud_stop">朗讀停止</string>
     <string name="clear_cache">清除快取</string>
     <string name="action_save">保存</string>
     <string name="edit_book_source">編輯書源</string>
@@ -211,7 +200,6 @@
     <string name="bookmark_add">添加書籤</string>
     <string name="action_del">刪除</string>
     <string name="load_over_time">加載逾時</string>
-    <string name="join_group">關注:%s</string>
     <string name="copy_complete">已複製</string>
     <string name="arrange_bookshelf">整理書架</string>
     <string name="clear_bookshelf_s">這將會刪除所有書籍，請謹慎操作。</string>
@@ -234,8 +222,6 @@
     <string name="check_book_source">校驗書源</string>
     <string name="check_select_source">校驗所選</string>
     <string name="progress_show">進度 %d/%d</string>
-    <string name="tts_fix">請安裝並選擇中文TTS!</string>
-    <string name="tts_init_failed">TTS初始化失敗!</string>
     <string name="jf_convert">簡繁轉換</string>
     <string name="jf_convert_o">關閉</string>
     <string name="jf_convert_f">簡轉繁</string>
@@ -258,7 +244,6 @@
     <string name="auto_expand_find">自動展開發現</string>
     <string name="default_expand_first">默認展開第一組發現</string>
     <string name="threads_num">當前線程數 %s</string>
-    <string name="read_aloud_speed">朗讀語速</string>
     <string name="auto_next_page">自動翻頁</string>
     <string name="auto_next_page_stop">停止自動翻頁</string>
     <string name="auto_next_page_speed">自動翻頁時每分鐘閱讀字數(CPM)</string>
@@ -272,7 +257,6 @@
     <string name="sys_file_picker">系統檔案選擇器</string>
     <string name="new_version">新版本</string>
     <string name="download_update">下載更新</string>
-    <string name="aloud_volume_page">朗讀時音量鍵翻頁</string>
     <string name="tip_margin_change">Tip邊距跟隨邊距調整</string>
     <string name="disable_update">禁止更新</string>
     <string name="allow_update">允許更新</string>
@@ -312,7 +296,6 @@
     <string name="page_mode_SLIDE">平移</string>
     <string name="page_mode_SCROLL">上下平移</string>
     <string name="page_mode_NONE">無動畫</string>
-    <string name="donate_s">此書源使用了進階功能，複製支付寶紅包搜索碼領取紅包或關注WeChat官方賬號[開源閱讀軟件]開啟。</string>
     <string name="up_change_source_last_chapter_t">後台更新換源最新章節</string>
     <string name="up_change_source_last_chapter_s">開啟則會在應用打開1分鐘後開始更新</string>
     <string name="behavior_main_t">書架ToolBar自動隱藏</string>
@@ -390,7 +373,6 @@
     <string name="sure_del_all_book">是否刪除全部書籍？</string>
     <string name="sure_del_download_book">是否同時刪除已下載的書籍目錄？</string>
     <string name="qr_per">掃描二維碼需相機權限</string>
-    <string name="aloud_can_not_auto_page">朗讀正在運行,不能自動翻頁</string>
     <string name="input_charset">輸入編碼</string>
     <string name="text_chapter_list_rule">TXT目錄規則</string>
     <string name="open_local_book_per">打開外部書籍需獲取儲存權限</string>
@@ -403,7 +385,6 @@
     <string name="get_book_list_success">搜尋列表獲取成功%d</string>
     <string name="non_null_source_name_url">書源名稱和URL不能為空</string>
     <string name="gallery">相簿</string>
-    <string name="get_ali_pay_hb">領支付寶紅包</string>
     <string name="non_update_url">沒有獲取到更新地址</string>
     <string name="check_host_cookie">正在打開首頁，成功自動返回主畫面</string>
     <string name="click_check_after_success">登錄成功後請點擊右上角圖示進行首頁訪問測試</string>

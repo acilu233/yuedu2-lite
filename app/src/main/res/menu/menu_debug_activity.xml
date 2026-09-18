@@ -2,10 +2,4 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item
-        android:id="@+id/action_scan"
-        android:title="@string/camera_scan"
-        android:icon="@drawable/ic_scan"
-        app:showAsAction="always" />
-
 </menu>

@@ -164,6 +164,14 @@
 public static java.lang.String TABLENAME;
 }
 -keep class **$Properties
+# greenDAO 的 DaoConfig 会用 "DAO类名$Properties" 做 Class.forName 反射，
+# 只 keep 内部类不够：DAO 类本身被改名后名字就对不上了，启动即崩
+# （表现为 org.greenrobot.greendao.DaoException: Could not init DAOConfig）
+-keep class **.*Dao { *; }
+-keep class **.*Dao$Properties { *; }
+-keepclassmembers class **.*Dao$Properties { *; }
+-keep class **.dao.** { *; }
+-keepclassmembers class **.dao.** { *; }
 -dontwarn org.greenrobot.greendao.database.**
 -dontwarn rx.**
 

@@ -59,6 +59,8 @@ public class FindBookFragment extends MBaseFragment<FindBookContract.Presenter> 
     private LinearLayoutManager leftLayoutManager;
     private RecyclerView.LayoutManager rightLayoutManager;
     private List<RecyclerViewData> data = new ArrayList<>();
+    /** 是否已经加载过发现数据（懒加载标记） */
+    private boolean findDataLoaded = false;
 
     @Override
     protected View createView(LayoutInflater inflater, ViewGroup container) {
@@ -95,7 +97,22 @@ public class FindBookFragment extends MBaseFragment<FindBookContract.Presenter> 
     @Override
     protected void firstRequest() {
         super.firstRequest();
-        refreshData();
+        // 墨水屏/低配机：发现页要遍历全部书源（本机 200+ 条），
+        // 启动时 ViewPager 会把这一页也创建出来，若立刻加载会长时间占满主线程。
+        // 改为只有真正切到"发现"页才加载。
+        if (getUserVisibleHint()) {
+            findDataLoaded = true;
+            refreshData();
+        }
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser && !findDataLoaded && binding != null) {
+            findDataLoaded = true;
+            refreshData();
+        }
     }
 
     public void refreshData() {

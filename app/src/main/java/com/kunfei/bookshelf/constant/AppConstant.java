@@ -40,7 +40,26 @@ public class AppConstant {
     public static final Pattern JS_PATTERN = Pattern.compile("(<js>[\\w\\W]*?</js>|@js:[\\w\\W]*$)", Pattern.CASE_INSENSITIVE);
     public static final Pattern EXP_PATTERN = Pattern.compile("\\{\\{([\\w\\W]*?)\\}\\}");
 
-    public static final ScriptEngine SCRIPT_ENGINE = new ScriptEngineManager().getEngineByName("rhino");
+    /**
+     * JS 引擎改成懒加载。
+     *
+     * 原来这里是 final 静态字段，第一次访问 AppConstant 就会构造 ScriptEngineManager，
+     * 在 Android 4.4/Dalvik 上要 1.3~1.4 秒（枚举并实例化脚本引擎），
+     * 而启动时 MApplication 会写 AppConstant.BOOK_CACHE_PATH，于是这 1.4 秒全落在启动主线程上。
+     * 现在只有真正用到 JS 规则时才初始化。
+     */
+    private static volatile ScriptEngine sScriptEngine;
+
+    public static ScriptEngine getScriptEngine() {
+        if (sScriptEngine == null) {
+            synchronized (AppConstant.class) {
+                if (sScriptEngine == null) {
+                    sScriptEngine = new ScriptEngineManager().getEngineByName("rhino");
+                }
+            }
+        }
+        return sScriptEngine;
+    }
 
     public static final MediaType jsonMediaType = MediaType.parse("Content-Type, application/json");
 

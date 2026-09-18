@@ -30,8 +30,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.zxing.EncodeHintType;
-import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.kunfei.basemvplib.BitIntentDataManager;
 import com.kunfei.bookshelf.BuildConfig;
 import com.kunfei.bookshelf.R;
@@ -44,7 +42,6 @@ import com.kunfei.bookshelf.databinding.ActivitySourceEditBinding;
 import com.kunfei.bookshelf.model.BookSourceManager;
 import com.kunfei.bookshelf.presenter.SourceEditPresenter;
 import com.kunfei.bookshelf.presenter.contract.SourceEditContract;
-import com.kunfei.bookshelf.service.ShareService;
 import com.kunfei.bookshelf.utils.RxUtils;
 import com.kunfei.bookshelf.utils.SoftInputUtil;
 import com.kunfei.bookshelf.utils.theme.ThemeStore;
@@ -62,7 +59,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import cn.bingoogolapple.qrcode.zxing.QRCodeEncoder;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.SingleOnSubscribe;
@@ -269,13 +265,7 @@ public class SourceEditActivity extends MBaseActivity<SourceEditContract.Present
         } else {
             adapter.reSetData(sourceEditList);
         }
-        binding.cbIsAudio.setChecked(Objects.equals(bookSourceBean.getBookSourceType(), BookType.AUDIO));
         binding.cbIsEnable.setChecked(bookSourceBean.getEnable());
-    }
-
-    private void scanBookSource() {
-        Intent intent = new Intent(this, QRCodeScanActivity.class);
-        startActivityForResult(intent, REQUEST_QR);
     }
 
     private BookSourceBean getBookSource(boolean hasFind) {
@@ -421,46 +411,7 @@ public class SourceEditActivity extends MBaseActivity<SourceEditContract.Present
         }
         bookSourceBeanN.setSerialNumber(serialNumber);
         bookSourceBeanN.setEnable(binding.cbIsEnable.isChecked());
-        bookSourceBeanN.setBookSourceType(binding.cbIsAudio.isChecked() ? BookType.AUDIO : null);
         return bookSourceBeanN;
-    }
-
-    @SuppressLint("SetWorldReadable")
-    private void shareBookSource() {
-        Single.create((SingleOnSubscribe<Bitmap>) emitter -> {
-            QRCodeEncoder.HINTS.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
-            Bitmap bitmap = QRCodeEncoder.syncEncodeQRCode(getBookSourceStr(true), 600);
-            QRCodeEncoder.HINTS.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
-            emitter.onSuccess(bitmap);
-        }).compose(RxUtils::toSimpleSingle)
-                .subscribe(new MySingleObserver<Bitmap>() {
-
-                    @Override
-                    public void onSuccess(Bitmap bitmap) {
-                        if (bitmap == null) {
-                            toast("书源文字太多,生成二维码失败");
-                            return;
-                        }
-                        try {
-                            File file = new File(SourceEditActivity.this.getExternalCacheDir(), "bookSource.png");
-                            FileOutputStream fOut = new FileOutputStream(file);
-                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fOut);
-                            fOut.flush();
-                            fOut.close();
-                            //noinspection ResultOfMethodCallIgnored
-                            file.setReadable(true, false);
-                            Uri contentUri = FileProvider.getUriForFile(SourceEditActivity.this, BuildConfig.APPLICATION_ID + ".fileProvider", file);
-                            final Intent intent = new Intent(Intent.ACTION_SEND);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            intent.putExtra(Intent.EXTRA_STREAM, contentUri);
-                            intent.setType("image/png");
-                            startActivity(Intent.createChooser(intent, "分享书源"));
-                        } catch (Exception e) {
-                            toast(e.getLocalizedMessage());
-                        }
-                    }
-                });
-
     }
 
     private void openRuleSummary() {
@@ -542,14 +493,10 @@ public class SourceEditActivity extends MBaseActivity<SourceEditContract.Present
             mPresenter.copySource(getBookSourceStr(false));
         } else if (id == R.id.action_paste_source) {
             mPresenter.pasteSource();
-        } else if (id == R.id.action_qr_code_camera) {
-            scanBookSource();
         } else if (id == R.id.action_share_it) {
-            shareBookSource();
+            shareText("Source Share", getBookSourceStr(true));
         } else if (id == R.id.action_share_str) {
             shareText("Source Share", getBookSourceStr(true));
-        } else if (id == R.id.action_share_wifi) {
-            ShareService.startThis(this, Collections.singletonList(getBookSource(true)));
         } else if (id == R.id.action_rule_summary) {
             openRuleSummary();
         } else if (id == R.id.action_debug_source) {

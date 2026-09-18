@@ -291,14 +291,15 @@ class ReadInterfacePop : FrameLayout {
     fun setBg() {
         binding.tv0.setTextColor(readBookControl.getTextColor(0))
         binding.tv1.setTextColor(readBookControl.getTextColor(1))
-        binding.tv2.setTextColor(readBookControl.getTextColor(2))
-        binding.tv3.setTextColor(readBookControl.getTextColor(3))
-        binding.tv4.setTextColor(readBookControl.getTextColor(4))
+        // 墨水屏：只保留两套配色（白底黑字 / 黑底白字），多余的色块直接隐藏
+        listOf(binding.tv2, binding.tv3, binding.tv4).forEach {
+            (it.parent as? android.view.View)?.visibility = android.view.View.GONE
+        }
+        listOf(binding.civBgGreen, binding.civBgBlue, binding.civBgBlack).forEach {
+            (it.parent as? android.view.View)?.visibility = android.view.View.GONE
+        }
         binding.civBgWhite.setImageDrawable(readBookControl.getBgDrawable(0, activity, 100, 180))
         binding.civBgYellow.setImageDrawable(readBookControl.getBgDrawable(1, activity, 100, 180))
-        binding.civBgGreen.setImageDrawable(readBookControl.getBgDrawable(2, activity, 100, 180))
-        binding.civBgBlue.setImageDrawable(readBookControl.getBgDrawable(3, activity, 100, 180))
-        binding.civBgBlack.setImageDrawable(readBookControl.getBgDrawable(4, activity, 100, 180))
     }
 
     private fun updateBg(index: Int) {

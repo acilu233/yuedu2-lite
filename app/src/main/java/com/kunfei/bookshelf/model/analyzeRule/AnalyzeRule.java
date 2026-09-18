@@ -4,7 +4,6 @@ import static android.text.TextUtils.isEmpty;
 import static com.kunfei.bookshelf.constant.AppConstant.EXP_PATTERN;
 import static com.kunfei.bookshelf.constant.AppConstant.JS_PATTERN;
 import static com.kunfei.bookshelf.constant.AppConstant.MAP_STRING;
-import static com.kunfei.bookshelf.constant.AppConstant.SCRIPT_ENGINE;
 import static com.kunfei.bookshelf.utils.NetworkUtils.headerPattern;
 
 import android.annotation.SuppressLint;
@@ -537,7 +536,7 @@ public class AnalyzeRule implements JsExtensions {
         bindings.put("source", bookSource);
         bindings.put("result", result);
         bindings.put("baseUrl", baseUrl);
-        return SCRIPT_ENGINE.eval(jsStr, bindings);
+        return com.kunfei.bookshelf.constant.AppConstant.getScriptEngine().eval(jsStr, bindings);
     }
 
 }

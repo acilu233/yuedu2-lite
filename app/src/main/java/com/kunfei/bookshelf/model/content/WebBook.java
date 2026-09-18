@@ -2,7 +2,6 @@ package com.kunfei.bookshelf.model.content;
 
 import static android.text.TextUtils.isEmpty;
 import static com.kunfei.bookshelf.constant.AppConstant.JS_PATTERN;
-import static com.kunfei.bookshelf.constant.AppConstant.SCRIPT_ENGINE;
 
 import android.text.TextUtils;
 
@@ -222,7 +221,8 @@ public class WebBook extends BaseModelImpl implements JsExtensions {
                 bindings.put("result", stringResponse);
                 bindings.put("baseUrl", baseUrl);
                 @SuppressWarnings("unchecked")
-                Response<String> res = (Response<String>) SCRIPT_ENGINE.eval(checkJs, bindings);
+                Response<String> res = (Response<String>) com.kunfei.bookshelf.constant.AppConstant
+                        .getScriptEngine().eval(checkJs, bindings);
                 emitter.onNext(res);
                 return;
             }

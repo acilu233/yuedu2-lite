@@ -39,7 +39,7 @@ import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
 public class BookListPresenter extends BasePresenterImpl<BookListContract.View> implements BookListContract.Presenter {
-    private int threadsNum = 6;
+    private int threadsNum = 3;
     private int refreshIndex;
     private List<BookShelfBean> bookShelfBeans;
     private int group;
@@ -111,7 +111,7 @@ public class BookListPresenter extends BasePresenterImpl<BookListContract.View> 
 
     private void startRefreshBook() {
         if (mView.getContext() != null) {
-            threadsNum = mView.getPreferences().getInt(mView.getContext().getString(R.string.pk_threads_num), 6);
+            threadsNum = mView.getPreferences().getInt(mView.getContext().getString(R.string.pk_threads_num), 3);
             if (bookShelfBeans != null && bookShelfBeans.size() > 0) {
                 refreshIndex = -1;
                 for (int i = 1; i <= threadsNum; i++) {
