@@ -65,7 +65,7 @@
 环境：JDK 11（不要用 17）、Android SDK（compileSdk 31、buildTools 30.0.3）。
 
 ```bash
-cd MyBookshelf
+cd yuedu_lite
 ./gradlew :app:assembleRelease
 ```
 
