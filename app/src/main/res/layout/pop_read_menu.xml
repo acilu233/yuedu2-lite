@@ -1,289 +1,185 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  阅读菜单：整块从屏幕底部搬到左右两条竖列（浮层），底部不再占用正文空间。
+    左列：目录 / 调节 / 自动翻页 / 上一章
+    右列：界面 / 设置 / 夜间模式 / 下一章
+  · 它只是浮在正文上层，不参与正文排版 —— 菜单开合不会让正文重新排版。
+  · 进度条已删除；「替换净化」已移到右上角 ⋮ 菜单里。
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:paddingTop="135dp">
+    <!--
+      paddingTop 135dp ≈ 顶部菜单高度：两列从顶部菜单下方开始排，
+      再加各列自己的 marginTop 决定整体高度位置（见 ll_side_left / ll_side_right）。
+    -->
 
+    <!-- 左侧竖列 -->
     <LinearLayout
-        android:id="@+id/ll_floating_button"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:gravity="center"
-        android:orientation="horizontal">
+        android:id="@+id/ll_side_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_marginTop="72dp"
+        android:layout_marginStart="5dp"
+        android:orientation="vertical">
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabAutoPage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:contentDescription="@string/auto_next_page"
-            android:src="@drawable/ic_auto_page"
-            android:tint="@color/tv_text_default"
-            app:backgroundTint="@color/background_menu"
-            app:elevation="2dp"
-            app:fabSize="mini"
-            app:pressedTranslationZ="2dp" />
+        <!-- 目录 -->
+        <LinearLayout
+            android:id="@+id/ll_catalog"
+            style="@style/Style.ReadMenuSideButton"
+            android:contentDescription="@string/chapter_list">
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabReplaceRule"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:contentDescription="@string/replace_rule_title"
-            android:src="@drawable/ic_find_replace"
-            android:tint="@color/tv_text_default"
-            app:backgroundTint="@color/background_menu"
-            app:elevation="2dp"
-            app:fabSize="mini"
-            app:pressedTranslationZ="2dp" />
+            <androidx.appcompat.widget.AppCompatImageView
+                style="@style/Style.ReadMenuSideIcon"
+                android:contentDescription="@string/chapter_list"
+                android:src="@drawable/ic_chapter_list"
+                app:tint="@color/tv_text_default" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabNightTheme"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:contentDescription="@string/night_theme"
-            android:src="@drawable/ic_brightness"
-            android:tint="@color/tv_text_default"
-            app:backgroundTint="@color/background_menu"
-            app:elevation="2dp"
-            app:fabSize="mini"
-            app:pressedTranslationZ="2dp" />
+            <TextView
+                style="@style/Style.ReadMenuSideLabel"
+                android:text="@string/chapter_list" />
+        </LinearLayout>
 
+        <!-- 调节 -->
+        <LinearLayout
+            android:id="@+id/ll_adjust"
+            style="@style/Style.ReadMenuSideButton"
+            android:layout_marginTop="12dp"
+            android:contentDescription="@string/adjust">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                style="@style/Style.ReadMenuSideIcon"
+                android:contentDescription="@string/adjust"
+                android:src="@drawable/ic_tune"
+                app:tint="@color/tv_text_default" />
+
+            <TextView
+                style="@style/Style.ReadMenuSideLabel"
+                android:text="@string/adjust" />
+        </LinearLayout>
+
+        <!-- 自动翻页 -->
+        <LinearLayout
+            android:id="@+id/ll_auto_page"
+            style="@style/Style.ReadMenuSideButton"
+            android:layout_marginTop="12dp"
+            android:contentDescription="@string/auto_next_page">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/iv_auto_page"
+                style="@style/Style.ReadMenuSideIcon"
+                android:contentDescription="@string/auto_next_page"
+                android:src="@drawable/ic_auto_page"
+                app:tint="@color/tv_text_default" />
+
+            <TextView
+                style="@style/Style.ReadMenuSideLabel"
+                android:text="@string/auto_next_page" />
+        </LinearLayout>
+
+        <!-- 上一章 -->
+        <TextView
+            android:id="@+id/tv_pre"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_read_menu_side_button"
+            android:clickable="true"
+            android:enabled="false"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="@string/previous_chapter"
+            android:textColor="@color/tv_text_default"
+            android:textSize="12sp" />
     </LinearLayout>
 
-    <View style="@style/Style.Shadow.Bottom" />
-
-    <!--底部设置栏-->
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:background="@color/background_menu">
-
-        <View
-            android:id="@+id/vw_bg"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-        <LinearLayout
-            android:id="@+id/llNavigationBar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <!--章节设置-->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
-                android:layout_marginTop="5dp"
-                android:layout_marginRight="20dp"
-                android:layout_marginBottom="5dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/tv_pre"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginEnd="10dp"
-                    android:background="@drawable/bg_ib_pre_round"
-                    android:clickable="true"
-                    android:enabled="false"
-                    android:focusable="true"
-                    android:paddingTop="10dp"
-                    android:paddingBottom="10dp"
-                    android:text="@string/previous_chapter"
-                    android:textColor="@color/tv_text_default"
-                    android:textSize="14sp" />
-
-                <com.kunfei.bookshelf.widget.views.ATESeekBar
-                    android:id="@+id/hpb_read_progress"
-                    android:layout_width="0dp"
-                    android:layout_height="25dp"
-                    android:layout_gravity="center_vertical"
-                    android:layout_weight="1" />
-
-                <TextView
-                    android:id="@+id/tv_next"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginEnd="10dp"
-                    android:background="@drawable/bg_ib_pre_round"
-                    android:clickable="true"
-                    android:enabled="false"
-                    android:focusable="true"
-                    android:paddingTop="10dp"
-                    android:paddingBottom="10dp"
-                    android:text="@string/next_chapter"
-                    android:textColor="@color/tv_text_default"
-                    android:textSize="14sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:baselineAligned="false"
-                android:orientation="horizontal">
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
-
-                <!--目录按钮-->
-                <LinearLayout
-                    android:id="@+id/ll_catalog"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:background="@drawable/bg_ib_pre_round"
-                    android:clickable="true"
-                    android:contentDescription="@string/chapter_list"
-                    android:focusable="true"
-                    android:orientation="vertical"
-                    android:paddingBottom="7dp">
-
-                    <androidx.appcompat.widget.AppCompatImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
-                        android:contentDescription="@string/chapter_list"
-                        android:src="@drawable/ic_chapter_list"
-                        app:tint="@color/tv_text_default"
-                        tools:ignore="NestedWeights" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_marginTop="3dp"
-                        android:text="@string/chapter_list"
-                        android:textColor="@color/tv_text_default"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="2" />
-                <!--调节按钮-->
-                <LinearLayout
-                    android:id="@+id/ll_adjust"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:background="@drawable/bg_ib_pre_round"
-                    android:clickable="true"
-                    android:contentDescription="@string/adjust"
-                    android:focusable="true"
-                    android:orientation="vertical"
-                    android:paddingBottom="7dp">
-
-                    <androidx.appcompat.widget.AppCompatImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
-                        android:contentDescription="@string/adjust"
-                        android:src="@drawable/ic_tune"
-                        app:tint="@color/tv_text_default"
-                        tools:ignore="NestedWeights" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_marginTop="3dp"
-                        android:text="@string/adjust"
-                        android:textColor="@color/tv_text_default"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="2" />
-                <!--界面按钮-->
-                <LinearLayout
-                    android:id="@+id/ll_font"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:background="@drawable/bg_ib_pre_round"
-                    android:clickable="true"
-                    android:contentDescription="@string/interface_setting"
-                    android:focusable="true"
-                    android:orientation="vertical"
-                    android:paddingBottom="7dp">
-
-                    <androidx.appcompat.widget.AppCompatImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
-                        android:contentDescription="@string/interface_setting"
-                        android:src="@drawable/ic_interface_setting"
-                        app:tint="@color/tv_text_default"
-                        tools:ignore="NestedWeights" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_marginTop="3dp"
-                        android:text="@string/interface_setting"
-                        android:textColor="@color/tv_text_default"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="2" />
-                <!--设置按钮-->
-                <LinearLayout
-                    android:id="@+id/ll_setting"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:background="@drawable/bg_ib_pre_round"
-                    android:clickable="true"
-                    android:contentDescription="@string/setting"
-                    android:focusable="true"
-                    android:orientation="vertical"
-                    android:paddingBottom="7dp">
-
-                    <androidx.appcompat.widget.AppCompatImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
-                        android:contentDescription="@string/setting"
-                        android:src="@drawable/ic_settings"
-                        app:tint="@color/tv_text_default"
-                        tools:ignore="NestedWeights" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_marginTop="3dp"
-                        android:text="@string/setting"
-                        android:textColor="@color/tv_text_default"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-        </LinearLayout>
-    </FrameLayout>
-
     <View
-        android:id="@+id/vwNavigationBar"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:background="@color/background_menu" />
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_weight="1" />
+
+    <!-- 右侧竖列 -->
+    <LinearLayout
+        android:id="@+id/ll_side_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_marginTop="72dp"
+        android:layout_marginEnd="5dp"
+        android:orientation="vertical">
+
+        <!-- 界面 -->
+        <LinearLayout
+            android:id="@+id/ll_font"
+            style="@style/Style.ReadMenuSideButton"
+            android:contentDescription="@string/interface_setting">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                style="@style/Style.ReadMenuSideIcon"
+                android:contentDescription="@string/interface_setting"
+                android:src="@drawable/ic_interface_setting"
+                app:tint="@color/tv_text_default" />
+
+            <TextView
+                style="@style/Style.ReadMenuSideLabel"
+                android:text="@string/interface_setting" />
+        </LinearLayout>
+
+        <!-- 设置 -->
+        <LinearLayout
+            android:id="@+id/ll_setting"
+            style="@style/Style.ReadMenuSideButton"
+            android:layout_marginTop="12dp"
+            android:contentDescription="@string/setting">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                style="@style/Style.ReadMenuSideIcon"
+                android:contentDescription="@string/setting"
+                android:src="@drawable/ic_settings"
+                app:tint="@color/tv_text_default" />
+
+            <TextView
+                style="@style/Style.ReadMenuSideLabel"
+                android:text="@string/setting" />
+        </LinearLayout>
+
+        <!-- 夜间模式 -->
+        <LinearLayout
+            android:id="@+id/ll_night_theme"
+            style="@style/Style.ReadMenuSideButton"
+            android:layout_marginTop="12dp"
+            android:contentDescription="@string/night_theme">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/iv_night_theme"
+                style="@style/Style.ReadMenuSideIcon"
+                android:contentDescription="@string/night_theme"
+                android:src="@drawable/ic_brightness"
+                app:tint="@color/tv_text_default" />
+
+            <TextView
+                style="@style/Style.ReadMenuSideLabel"
+                android:text="@string/night_theme" />
+        </LinearLayout>
+
+        <!-- 下一章 -->
+        <TextView
+            android:id="@+id/tv_next"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_read_menu_side_button"
+            android:clickable="true"
+            android:enabled="false"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="@string/next_chapter"
+            android:textColor="@color/tv_text_default"
+            android:textSize="12sp" />
+    </LinearLayout>
 </LinearLayout>

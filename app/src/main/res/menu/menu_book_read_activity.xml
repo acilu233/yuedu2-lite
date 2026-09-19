@@ -70,6 +70,12 @@
             app:showAsAction="never" />
 
         <item
+            android:id="@+id/action_read_replace_rule"
+            android:icon="@drawable/ic_find_replace"
+            android:title="@string/replace_rule"
+            app:showAsAction="never" />
+
+        <item
             android:id="@+id/update_chapter_list"
             android:icon="@drawable/ic_update"
             android:title="@string/update_chapter"

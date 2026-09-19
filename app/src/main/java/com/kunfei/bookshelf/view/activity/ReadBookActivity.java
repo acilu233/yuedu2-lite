@@ -383,7 +383,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
                 binding.vMenuBg.setOnClickListener(v -> popMenuOut());
                 initImmersionBar();
                 int nbh = ActivityExtensionsKt.getNavigationBarHeight(ReadBookActivity.this);
-                binding.readMenuBottom.setNavigationBarHeight(nbh);
                 // 窗口现在始终延伸到导航栏之下（保证内容区不重排），
                 // 所以给贴底的弹层补上导航栏高度的底部内边距，避免被系统栏盖住
                 for (View pop : new View[]{binding.readInterfacePop, binding.readAdjustPop,
@@ -501,13 +500,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
     private void initBottomMenu() {
         binding.readMenuBottom.setListener(new ReadBottomMenu.Callback() {
             @Override
-            public void skipToPage(int page) {
-                if (mPageLoader != null) {
-                    mPageLoader.skipToPage(page);
-                }
-            }
-
-            @Override
             public void autoPage() {
                 ReadBookActivity.this.autoPage = !ReadBookActivity.this.autoPage;
                 ReadBookActivity.this.autoPage();
@@ -530,12 +522,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
                 if (mPresenter.getBookShelf() != null) {
                     mPageLoader.skipNextChapter();
                 }
-            }
-
-            @Override
-            public void openReplaceRule() {
-                popMenuOut();
-                ReplaceRuleActivity.startThis(ReadBookActivity.this, mPresenter.getBookShelf());
             }
 
             @Override
@@ -567,11 +553,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
             @Override
             public void toast(int id) {
                 ReadBookActivity.this.toast(id);
-            }
-
-            @Override
-            public void dismiss() {
-                popMenuOut();
             }
         });
     }
@@ -794,13 +775,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
                      */
                     @Override
                     public void onPageCountChange(int count) {
-                        binding.readMenuBottom.getReadProgress().setMax(Math.max(0, count - 1));
-                        binding.readMenuBottom.getReadProgress().setProgress(0);
-                        // 如果处于错误状态，那么就冻结使用
-                        binding.readMenuBottom.getReadProgress().setEnabled(
-                                mPageLoader.getPageStatus() != TxtChapter.Status.LOADING
-                                        && mPageLoader.getPageStatus() != TxtChapter.Status.ERROR
-                        );
                     }
 
                     /**
@@ -811,9 +785,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
                         mPresenter.getBookShelf().setDurChapter(chapterIndex);
                         mPresenter.getBookShelf().setDurChapterPage(pageIndex);
                         mPresenter.saveProgress();
-                        binding.readMenuBottom.getReadProgress().post(
-                                () -> binding.readMenuBottom.getReadProgress().setProgress(pageIndex)
-                        );
                         autoPage();
                     }
 
@@ -1099,6 +1070,10 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
         if (id == R.id.enable_replace) {
             mPresenter.getBookShelf().setReplaceEnable(!mPresenter.getBookShelf().getReplaceEnable());
             refresh(false);
+        } else if (id == R.id.action_read_replace_rule) {
+            // 替换净化（原底部圆钮）：打开替换规则管理页
+            popMenuOut();
+            ReplaceRuleActivity.startThis(this, mPresenter.getBookShelf());
         } else if (id == R.id.action_change_source) {
             changeSource();
         } else if (id == R.id.action_refresh) {

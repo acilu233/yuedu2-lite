@@ -24,6 +24,12 @@ def signKeyAlias = keystoreProps.getProperty('RELEASE_KEY_ALIAS')
 def signKeyPassword = keystoreProps.getProperty('RELEASE_KEY_PASSWORD')
         ?: (project.findProperty('RELEASE_KEY_PASSWORD') ?: 'android')
 
+// Fire OS 4.4（Kindle）的 Package Access Helper（DefaultContainerService）碰到带 v2 签名块的 APK，
+// 装包时会 NullPointerException 崩溃 —— 系统弹"应用包访问权限帮助程序已停止"，还偶发把安装卡死。
+// 加 -PkindleSign 就是只签 v1 的包（老设备用，装包不再崩）；默认仍然 v1+v2，因为 Android 11+
+// 只接受 targetSdk 30+ 且带 v2 签名的包。
+def kindleSign = project.hasProperty('kindleSign')
+
 android {
     compileSdkVersion 31
     signingConfigs {
@@ -32,6 +38,8 @@ android {
             storePassword signStorePassword
             keyAlias signKeyAlias
             keyPassword signKeyPassword
+            enableV1Signing true
+            enableV2Signing !kindleSign
         }
     }
 
@@ -71,7 +79,9 @@ android {
         }
         android.applicationVariants.all { variant ->
             variant.outputs.all {
-                outputFileName = "${name}_${defaultConfig.versionName}.apk"
+                outputFileName = kindleSign
+                        ? "${name}_${defaultConfig.versionName}_kindle.apk"
+                        : "${name}_${defaultConfig.versionName}.apk"
             }
         }
     }

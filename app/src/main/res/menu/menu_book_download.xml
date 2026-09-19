@@ -6,7 +6,7 @@
     <item
         android:id="@+id/action_cancel"
         android:icon="@drawable/ic_stop_black_24dp"
-        android:title="@string/cancel"
+        android:title="@string/cache_stop_all"
         app:showAsAction="ifRoom" />
 
 </menu>

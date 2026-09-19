@@ -7,7 +7,13 @@
     <string name="receiving_shared_label">阅读·搜索</string>
     <string name="bookshelf_empty">书架还空着，先去添加吧！</string>
     <string name="action_search">搜索</string>
-    <string name="action_download">下载任务</string>
+    <string name="action_download">缓存管理</string>
+    <string name="cache_manage">缓存管理</string>
+    <string name="cache_progress">已缓存 %1$d/%2$d 章</string>
+    <string name="cache_resume">继续缓存</string>
+    <string name="cache_stop">停止缓存</string>
+    <string name="cache_stop_all">全部停止</string>
+    <string name="cache_empty">还没有缓存任何章节</string>
     <string name="bookshelf_layout">书架布局</string>
     <string name="book_library">书城</string>
     <string name="book_local">添加本地</string>
@@ -51,7 +57,7 @@
     <string name="download_offline_t">离线下载</string>
     <string name="download_offline_s">下载选择的章节到本地</string>
     <string name="change_origin">换源</string>
-    <string name="about_description">\u3000\u3000阅读 Lite 是基于「阅读 2.0」（MyBookshelf）精简改造的阅读器，为老旧设备而生：安装包约 10MB，无广告、无付费门槛，Android 4.4 的低配机器也能顺畅看书。\n\u3000\u3000支持 3.0 格式书源（JSON 可直接导入），并内置番茄书源；墨水屏优先：只保留黑白两套配色、界面无动画、翻页无动画，阅读时全屏，调出菜单不会挤动正文。</string>
+    <string name="about_description">\u3000\u3000阅读 Lite 是基于「阅读 2.0」（MyBookshelf）精简改造的阅读器，为老旧设备而生：安装包约 10MB，无广告、无付费门槛，Android 4.4 的低配机器也能顺畅看书。\n\u3000\u3000支持 3.0 格式书源（JSON 可直接导入），并内置番茄书源；墨水屏优先：只保留黑白两套配色、界面无动画、翻页无动画，阅读时全屏，阅读菜单放在屏幕左右两侧，调出菜单不会挤动正文。</string>
     <string name="usage_guide">使用说明</string>
     <string name="version_name">Version %s</string>
     <string name="pt_auto_refresh">自动刷新</string>

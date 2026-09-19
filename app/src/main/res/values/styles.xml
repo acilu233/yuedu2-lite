@@ -90,6 +90,33 @@
         <item name="colorAccent">@color/md_grey_900</item>
     </style>
 
+    <!-- 阅读菜单左右竖列的方钮：图标 + 小字标签 -->
+    <style name="Style.ReadMenuSideButton" parent="">
+        <item name="android:layout_width">50dp</item>
+        <item name="android:layout_height">50dp</item>
+        <item name="android:background">@drawable/bg_read_menu_side_button</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:paddingTop">5dp</item>
+        <item name="android:paddingBottom">4dp</item>
+    </style>
+
+    <style name="Style.ReadMenuSideIcon" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:layout_weight">1</item>
+    </style>
+
+    <style name="Style.ReadMenuSideLabel" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textColor">@color/tv_text_default</item>
+        <item name="android:textSize">10sp</item>
+    </style>
+
     <style name="AppTheme.AppBarOverlay.Dark" parent="ThemeOverlay.AppCompat.Dark">
         <item name="colorAccent">@color/md_grey_100</item>
     </style>
