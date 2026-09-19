@@ -7,6 +7,7 @@ import com.kunfei.bookshelf.bean.BookChapterBean;
 import com.kunfei.bookshelf.bean.BookContentBean;
 import com.kunfei.bookshelf.bean.BookShelfBean;
 import com.kunfei.bookshelf.help.BookshelfHelp;
+import com.kunfei.bookshelf.help.PendingJumpHelp;
 import com.kunfei.bookshelf.model.WebBookModel;
 import com.kunfei.bookshelf.model.content.WebBook;
 import com.kunfei.bookshelf.utils.NetworkUtils;
@@ -46,7 +47,7 @@ public class PageLoaderNet extends PageLoader {
         if (!callback.getChapterList().isEmpty()) {
             isChapterListPrepare = true;
             // 打开章节
-            skipToChapter(book.getDurChapter(), book.getDurChapterPage());
+            openTargetChapter();
         } else {
             WebBookModel.getInstance().getChapterList(book)
                     .compose(RxUtils::toSimpleSingle)
@@ -65,7 +66,7 @@ public class PageLoaderNet extends PageLoader {
                                 callback.onCategoryFinish(chapterBeanList);
                             }
                             // 加载并显示当前章节
-                            skipToChapter(book.getDurChapter(), book.getDurChapterPage());
+                            openTargetChapter();
                         }
 
                         @Override
@@ -77,6 +78,19 @@ public class PageLoaderNet extends PageLoader {
                             }
                         }
                     });
+        }
+    }
+
+    /**
+     * 打开章节：目录里点过的那一章（待处理跳转）优先。
+     * 阅读页被系统回收后重建时，就是靠这个把跳转补上的。
+     */
+    private void openTargetChapter() {
+        int[] jump = PendingJumpHelp.consume(book.getNoteUrl());
+        if (jump != null) {
+            skipToChapter(jump[0], jump[1]);
+        } else {
+            skipToChapter(book.getDurChapter(), book.getDurChapterPage());
         }
     }
 

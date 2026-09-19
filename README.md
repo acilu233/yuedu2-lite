@@ -19,7 +19,12 @@
 - **番茄直达**：搜索页菜单 → 番茄直达，粘贴分享链接/文案/书籍 ID 或直接搜书名即可阅读。
 - **干净**：移除了捐赠入口、公众号/QQ 群推广、付费门禁和所有广告代码。
 
-## 本次更新（1.1）
+## 本次更新（1.2）
+
+- **修复「目录名存实亡」**：点目录里的章节跳不过去——低内存设备（或开发者选项里的"不保留活动"）上，打开目录时阅读页会被系统回收，原来靠内存事件传递的跳转就丢了；现在跳转目标会记录在进程内，阅读页重建后照样跳过去。
+- **修复跳章节时卡死**：逐字排版时每个字都调用 `StaticLayout.getDesiredWidth`，一页几百个字在 4.4 老设备上要好几秒（会弹"阅读 Lite 无响应"）；改成 `measureText` 并去掉每字一个临时字符串，跳远处章节不再卡。
+
+### 1.1 的更新
 
 - 阅读菜单整块从屏幕底部搬到**左右两条竖列**：左侧 目录 / 调节 / 自动翻页 / 上一章，右侧 界面 / 设置 / 夜间模式 / 下一章；底部不再占用正文，菜单只浮在正文上层，开关菜单不会让正文重新排版。
 - 菜单按钮统一加了底板与描边：白天近黑边、夜间白色边，夜间相邻按钮之间有清晰的白色分隔。
@@ -53,7 +58,7 @@
 6. **只有黑白主题**：不提供自定义配色，只保留白天/夜间两套。
 7. **没有朗读/有声书**：朗读、朗读定时、朗读语速、音频播放整块功能都已删除。
 8. **不做跨设备同步**：Web 服务、WebDAV 都已移除，同步只能靠手动备份文件。
-9. **Kindle 请用专用安装包**：Fire OS / Android 4.4 的系统安装服务解析不了带 v2 签名的包（会在装包时弹「应用包访问权限帮助程序已停止」，偶尔还把安装卡住），所以额外提供了只签 v1 的 `YueDuLite-1.1-Kindle.apk`；普通包 `YueDuLite-1.1.apk` 给现代系统用（Android 11+ 只接受带 v2 签名的包）。
+9. **Kindle 请用专用安装包**：Fire OS / Android 4.4 的系统安装服务解析不了带 v2 签名的包（会在装包时弹「应用包访问权限帮助程序已停止」，偶尔还把安装卡住），所以额外提供了只签 v1 的 `YueDuLite-1.2-Kindle.apk`；普通包 `YueDuLite-1.2.apk` 给现代系统用（Android 11+ 只接受带 v2 签名的包）。
 
 ## 构建
 
@@ -64,13 +69,13 @@ cd MyBookshelf
 ./gradlew :app:assembleRelease
 ```
 
-产物：`app/build/outputs/apk/release/YueDuLite_1.1.apk`
+产物：`app/build/outputs/apk/release/YueDuLite_1.2.apk`
 
 给 Kindle / Android 4.4 老设备出包时加一个参数，产物是只签 v1 的包（文件名带 `_kindle`）：
 
 ```bash
 ./gradlew :app:assembleRelease -PkindleSign
-# → app/build/outputs/apk/release/YueDuLite_1.1_kindle.apk
+# → app/build/outputs/apk/release/YueDuLite_1.2_kindle.apk
 ```
 
 两个包的区别只有签名方案：默认包 v1+v2（Android 11+ 要求），`-PkindleSign` 包只签 v1（Fire OS 4.4 的安装服务才不会崩）。签名证书是同一把，升级可以互相覆盖安装。

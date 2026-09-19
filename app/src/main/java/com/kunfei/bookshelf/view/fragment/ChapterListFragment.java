@@ -21,6 +21,7 @@ import com.kunfei.bookshelf.bean.BookShelfBean;
 import com.kunfei.bookshelf.bean.OpenChapterBean;
 import com.kunfei.bookshelf.constant.RxBusTag;
 import com.kunfei.bookshelf.databinding.FragmentChapterListBinding;
+import com.kunfei.bookshelf.help.PendingJumpHelp;
 import com.kunfei.bookshelf.view.activity.ChapterListActivity;
 import com.kunfei.bookshelf.view.adapter.ChapterListAdapter;
 
@@ -82,6 +83,8 @@ public class ChapterListFragment extends MBaseFragment<IPresenter> {
         binding.rvList.setItemAnimator(null);
         chapterListAdapter = new ChapterListAdapter(bookShelf, chapterBeanList, (index, page) -> {
             if (index != bookShelf.getDurChapter()) {
+                // 阅读页可能已经被系统回收（那样就收不到 RxBus 事件了），先把目标记下来
+                PendingJumpHelp.set(bookShelf.getNoteUrl(), index, page);
                 RxBus.get().post(RxBusTag.SKIP_TO_CHAPTER, new OpenChapterBean(index, page));
             }
             if (getFatherActivity() != null) {

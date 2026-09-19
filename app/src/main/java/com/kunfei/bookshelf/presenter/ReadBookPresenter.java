@@ -34,6 +34,7 @@ import com.kunfei.bookshelf.bean.SearchBookBean;
 import com.kunfei.bookshelf.bean.TwoDataBean;
 import com.kunfei.bookshelf.constant.RxBusTag;
 import com.kunfei.bookshelf.help.BookshelfHelp;
+import com.kunfei.bookshelf.help.PendingJumpHelp;
 import com.kunfei.bookshelf.help.ChangeSourceHelp;
 import com.kunfei.bookshelf.model.BookSourceManager;
 import com.kunfei.bookshelf.model.ImportBookModel;
@@ -449,6 +450,8 @@ public class ReadBookPresenter extends BasePresenterImpl<ReadBookContract.View> 
 
     @Subscribe(thread = EventThread.MAIN_THREAD, tags = {@Tag(RxBusTag.SKIP_TO_CHAPTER)})
     public void skipToChapter(OpenChapterBean openChapterBean) {
+        // 阅读页还活着，走正常跳转；清掉待处理记录，免得以后重建时又跳一次
+        PendingJumpHelp.clear();
         mView.skipToChapter(openChapterBean.getChapterIndex(), openChapterBean.getPageIndex());
     }
 

@@ -970,8 +970,8 @@ public abstract class PageLoader {
                 str = txtPage.getLine(i);
                 strLength = strLength + str.length();
                 mTextPaint.setColor(readBookControl.getTextColor());
-                Layout tempLayout = new StaticLayout(str, mTextPaint, mVisibleWidth, Layout.Alignment.ALIGN_NORMAL, 0, 0, false);
-                float width = StaticLayout.getDesiredWidth(str, tempLayout.getLineStart(0), tempLayout.getLineEnd(0), mTextPaint);
+                // 老设备上 StaticLayout 很贵，这里只需要一行文字的宽度，直接用 measureText
+                float width = mTextPaint.measureText(str);
                 if (needScale(str)) {
                     drawScaledText(canvas, str, width, mTextPaint, top, i, txtPage.getTxtLists());
                 } else {
@@ -983,7 +983,7 @@ public abstract class PageLoader {
                 if (isFirstLineOfParagraph(str)) {
                     String blanks = StringUtils.halfToFull("  ");
                     //canvas.drawText(blanks, x, top, mTextPaint);
-                    float bw = StaticLayout.getDesiredWidth(blanks, mTextPaint);
+                    float bw = mTextPaint.measureText(blanks);
                     leftposition += bw;
                 }
                 float rightposition = 0;
@@ -1196,8 +1196,7 @@ public abstract class PageLoader {
                 if (top > totalHeight) {
                     break;
                 } else if (top > startHeight) {
-                    Layout tempLayout = new StaticLayout(str, mTextPaint, mVisibleWidth, Layout.Alignment.ALIGN_NORMAL, 0, 0, false);
-                    float width = StaticLayout.getDesiredWidth(str, tempLayout.getLineStart(0), tempLayout.getLineEnd(0), mTextPaint);
+                    float width = mTextPaint.measureText(str);
                     if (needScale(str)) {
                         drawScaledText(canvas, str, width, mTextPaint, top, i, page.getTxtLists());
                     } else {
@@ -1210,7 +1209,7 @@ public abstract class PageLoader {
                     if (isFirstLineOfParagraph(str)) {
                         String blanks = StringUtils.halfToFull("  ");
                         //canvas.drawText(blanks, x, top, mTextPaint);
-                        float bw = StaticLayout.getDesiredWidth(blanks, mTextPaint);
+                        float bw = mTextPaint.measureText(blanks);
                         leftposition += bw;
                     }
 
@@ -1601,7 +1600,7 @@ public abstract class PageLoader {
 
         if (isFirstLineOfParagraph(line)) {
             canvas.drawText(indent, x, top, paint);
-            float bw = StaticLayout.getDesiredWidth(indent, paint);
+            float bw = paint.measureText(indent);
             x += bw;
             line = line.substring(readBookControl.getIndent());
         }
@@ -1613,9 +1612,10 @@ public abstract class PageLoader {
 
         float d = ((mDisplayWidth - (mMarginLeft + mMarginRight)) - lineWidth) / gapCount;
         for (; i < line.length(); i++) {
-            String c = String.valueOf(line.charAt(i));
-            float cw = StaticLayout.getDesiredWidth(c, paint);
-            canvas.drawText(c, x, top, paint);
+            // 逐字测量：老设备上 StaticLayout.getDesiredWidth 每个字都要构造 TextLine，
+            // 一页几百个字就是几秒的主线程开销（会 ANR），换成 measureText，并且不再为每个字建 String
+            float cw = paint.measureText(line, i, i + 1);
+            canvas.drawText(line, i, i + 1, x, top, paint);
             //pzl
             TxtChar txtChar = new TxtChar();
             txtChar.setChardata(line.charAt(i));
